@@ -920,6 +920,74 @@ code::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-scrollbar-thumb-hover);
 }
 
+/* --- Code Block Toolbar --- */
+.code-block-wrapper,
+.code-block-wrapper > div {
+  position: relative;
+}
+
+.code-block-toolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  z-index: 10;
+}
+
+.code-block-wrapper:hover .code-block-toolbar,
+div:hover > .code-block-toolbar {
+  opacity: 1;
+}
+
+.code-block-lang-badge {
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--color-muted);
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  user-select: none;
+}
+
+.code-block-copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background 100ms ease, color 100ms ease;
+  outline: none;
+}
+
+.code-block-copy-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+}
+
+.code-block-copy-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-ring);
+}
+
+.code-block-copied-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-green-500);
+}
+
 /* NFO Credits Scanlines Animation */
 @keyframes scanlines {
   0% {

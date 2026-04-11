@@ -1,12 +1,10 @@
 import { Terminal, User, Bot, AlertCircle, CheckCircle2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import remarkGfm from "remark-gfm";
 
+import CodeBlock from "@/components/CodeBlock";
 import { Card, CardContent } from "@/components/ui/card";
-import { useTheme } from "@/hooks";
-import { getClaudeSyntaxTheme } from "@/lib/claudeSyntaxTheme";
 import { handleError } from "@/lib/errorHandler";
 import { cn } from "@/lib/utils";
 
@@ -78,10 +76,6 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({
 }) => {
   // State to track tool results mapped by tool call ID
   const [toolResults, setToolResults] = useState<Map<string, any>>(new Map());
-
-  // Get current theme
-  const { theme } = useTheme();
-  const syntaxTheme = getClaudeSyntaxTheme(theme);
   // Extract all tool results from stream messages
   useEffect(() => {
     const results = new Map<string, unknown>();
@@ -167,16 +161,15 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({
                           components={{
                             code({ node, inline, className, children, ...props }: any) {
                               const match = /language-(\w+)/.exec(className || '');
-                              return !inline && match ? (
-                                <SyntaxHighlighter
-                                  style={syntaxTheme}
-                                  language={match[1]}
-                                  PreTag="div"
-                                  {...props}
-                                >
-                                  {String(children).replace(/\n$/, '')}
-                                </SyntaxHighlighter>
-                              ) : (
+                              if (!inline && match) {
+                                return (
+                                  <CodeBlock
+                                    code={String(children).replace(/\n$/, '')}
+                                    language={match[1]}
+                                  />
+                                );
+                              }
+                              return (
                                 <code className={className} {...props}>
                                   {children}
                                 </code>
@@ -780,16 +773,15 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({
                             ...restProps
                           } = props;
                           const match = /language-(\w+)/.exec((className as string) || "");
-                          return !inline && match ? (
-                            <SyntaxHighlighter
-                              style={syntaxTheme}
-                              language={match[1]}
-                              PreTag="div"
-                              {...restProps}
-                            >
-                              {String(children).replace(/\n$/, "")}
-                            </SyntaxHighlighter>
-                          ) : (
+                          if (!inline && match) {
+                            return (
+                              <CodeBlock
+                                code={String(children).replace(/\n$/, "")}
+                                language={match[1]}
+                              />
+                            );
+                          }
+                          return (
                             <code className={className as string} {...restProps}>
                               {children as React.ReactNode}
                             </code>

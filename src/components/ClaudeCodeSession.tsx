@@ -14,6 +14,8 @@ import {
   X,
   Hash,
   Command,
+  ListTree,
+  AlignLeft,
 } from "lucide-react";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
@@ -41,6 +43,7 @@ import { cn } from "@/lib/utils";
 import { type ClaudeModel } from "@/types/models";
 
 import type { ClaudeStreamMessage } from "./AgentExecution";
+import { AgentStepTree } from "./AgentStepTree";
 import { CheckpointSettings } from "./CheckpointSettings";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { FloatingPromptInput, type FloatingPromptInputRef } from "./FloatingPromptInput";
@@ -48,6 +51,63 @@ import { SlashCommandsManager } from "./SlashCommandsManager";
 import { StreamMessage } from "./StreamMessage";
 import { TimelineNavigator } from "./TimelineNavigator";
 import { WebviewPreview } from "./WebviewPreview";
+import { useStepTreeStore } from "@/lib/stepTreeStore";
+import { parseStreamMessage, resetStepParser } from "@/lib/stepParser";
+
+// ── Streaming debounce: batch messages to reduce re-renders ────────────────
+// Module-level buffer avoids triggering React state on every streaming token.
+// Messages are accumulated and flushed at most once every ~50 ms.
+const STREAM_FLUSH_MS = 50;
+
+interface StreamingBuffer {
+  pending: ClaudeStreamMessage[];
+  flushScheduled: boolean;
+  flushTimer: ReturnType<typeof setTimeout> | null;
+}
+
+const streamingBuffer: StreamingBuffer = {
+  pending: [],
+  flushScheduled: false,
+  flushTimer: null,
+};
+
+type MessageSubscriber = (updater: (prev: ClaudeStreamMessage[]) => ClaudeStreamMessage[]) => void;
+const subscribers = new Set<MessageSubscriber>();
+
+function subscribeMessages(fn: MessageSubscriber): () => void {
+  subscribers.add(fn);
+  return () => { subscribers.delete(fn); };
+}
+
+function flushBuffer(): void {
+  streamingBuffer.flushScheduled = false;
+  streamingBuffer.flushTimer = null;
+  if (streamingBuffer.pending.length === 0) return;
+
+  const batch = streamingBuffer.pending;
+  streamingBuffer.pending = [];
+
+  for (const fn of subscribers) {
+    fn((prev) => [...prev, ...batch]);
+  }
+}
+
+function bufferMessage(message: ClaudeStreamMessage): void {
+  streamingBuffer.pending.push(message);
+  if (!streamingBuffer.flushScheduled) {
+    streamingBuffer.flushScheduled = true;
+    streamingBuffer.flushTimer = setTimeout(flushBuffer, STREAM_FLUSH_MS);
+  }
+}
+
+function flushNow(): void {
+  if (streamingBuffer.flushTimer !== null) {
+    clearTimeout(streamingBuffer.flushTimer);
+  }
+  flushBuffer();
+}
+
+// ─── End streaming debounce helpers ────────────────────────────────────────
 
 
 
@@ -111,6 +171,15 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
   const { t } = useI18n();
   const [projectPath, setProjectPath] = useState(initialProjectPath || session?.project_path || "");
   const [messages, setMessages] = useState<ClaudeStreamMessage[]>([]);
+
+  // Subscribe to the streaming message buffer (debounce layer)
+  useEffect(() => {
+    const unsubscribe = subscribeMessages(setMessages);
+    return () => {
+      unsubscribe();
+      flushNow();
+    };
+  }, []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rawJsonlOutput, setRawJsonlOutput] = useState<string[]>([]);
@@ -299,6 +368,12 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
     });
   }, [projectPath, session, extractedSessionInfo, effectiveSession, messages.length, isLoading]);
 
+  // Reset step tree when session changes (new session mounted)
+  useEffect(() => {
+    resetStepParser();
+    useStepTreeStore.getState().clearTree();
+  }, [session?.id]);
+
   const checkForActiveSession = useCallback(async () => {
     // If we have a session prop, check if it's still active
     if (session) {
@@ -394,6 +469,12 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
         if (parsedMessages.length > 0) {
           setIsFirstPrompt(false);
         }
+        // Populate step tree from loaded history
+        resetStepParser();
+        useStepTreeStore.getState().clearTree();
+        for (const line of lines) {
+          try { parseStreamMessage(line); } catch { /* non-critical */ }
+        }
       }
     } catch (err) {
       logger.error("[ClaudeCodeSession] Failed to load session history:", err);
@@ -454,7 +535,9 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
                   try {
                     setRawJsonlOutput((prev) => [...prev, event.payload]);
                     const message = JSON.parse(event.payload) as ClaudeStreamMessage;
-                    setMessages((prev) => [...prev, message]);
+                    bufferMessage(message);
+                    // Feed into step tree parser
+                    try { parseStreamMessage(event.payload); } catch { /* non-critical */ }
                   } catch (err) {
                     logger.error("Failed to parse resumed session message:", err);
                   }
@@ -816,7 +899,14 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
               sessionMetrics.current.errorsEncountered += 1;
             }
 
-            setMessages((prev) => [...prev, message]);
+            bufferMessage(message);
+
+            // Feed into step tree parser (tree view)
+            try {
+              parseStreamMessage(payload);
+            } catch (stepErr) {
+              logger.debug("[ClaudeCodeSession] Step parser error (non-critical):", stepErr);
+            }
           } catch (err) {
             logger.error("[ClaudeCodeSession] Failed to parse or process message:", err, "payload:", payload);
             await handleError(err as Error, { operation: "parseClaudeMessage", payload });
@@ -1603,6 +1693,33 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
                 {t.sessions.commands}
               </Button>
             )}
+
+            {/* View mode toggle: stream vs tree */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => useStepTreeStore.getState().setViewMode(
+                      useStepTreeStore.getState().viewMode === 'stream' ? 'tree' : 'stream'
+                    )}
+                    className="h-8 w-8"
+                    title="Toggle tree view"
+                  >
+                    {useStepTreeStore((s) => s.viewMode) === 'stream' ? (
+                      <ListTree className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                    ) : (
+                      <AlignLeft className="h-4 w-4 text-primary" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Toggle tree view</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
             <div className="flex items-center gap-2">
               {showSettings && (
                 <CheckpointSettings
@@ -1697,7 +1814,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
               left={
                 <div className="h-full flex flex-col">
                   {projectPathInput}
-                  {messagesList}
+                  {useStepTreeStore((s) => s.viewMode) === 'tree' ? <AgentStepTree /> : messagesList}
                 </div>
               }
               right={
@@ -1719,7 +1836,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
             // Original layout when no preview
             <div className="h-full flex flex-col max-w-5xl mx-auto">
               {projectPathInput}
-              {messagesList}
+              {useStepTreeStore((s) => s.viewMode) === 'tree' ? <AgentStepTree /> : messagesList}
 
               {isLoading && messages.length === 0 && !session && (
                 <div className="flex items-center justify-center h-full">
