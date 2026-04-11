@@ -18,12 +18,16 @@ vi.mock("framer-motion", () => ({
 // Mock lucide-react icons
 vi.mock("lucide-react", () => ({
   ChevronRight: () => <span data-testid="icon-chevron">›</span>,
+  RotateCcw: () => <span data-testid="icon-retry">↻</span>,
+  Trash2: () => <span data-testid="icon-trash">🗑</span>,
 }));
 
 // Build mock store data — flat tree with 2 root nodes, first has children
 const mockToggleExpand = vi.fn();
 const mockExpandAll = vi.fn();
 const mockCollapseAll = vi.fn();
+const mockRetryStep = vi.fn();
+const mockDeleteStep = vi.fn();
 
 const createMockStore = (stepTree: any[]) => (selector: any) => {
   const state = {
@@ -31,6 +35,8 @@ const createMockStore = (stepTree: any[]) => (selector: any) => {
     toggleExpand: mockToggleExpand,
     expandAll: mockExpandAll,
     collapseAll: mockCollapseAll,
+    retryStep: mockRetryStep,
+    deleteStep: mockDeleteStep,
   };
   return typeof selector === "function" ? selector(state) : state;
 };
@@ -275,6 +281,99 @@ describe("AgentStepTree Component", () => {
       render(<AgentStepTree />);
 
       expect(screen.getByText("Steps")).toBeInTheDocument();
+    });
+  });
+
+  // ---- 6. Node retry action ----
+  describe("node retry action", () => {
+    it("clicking retry button on an error node calls retryStep", () => {
+      setupStore(TEST_TREE);
+      render(<AgentStepTree />);
+
+      // step-2 is an error node — find its retry button via aria-label
+      const step2Row = screen.getByText("Failed to compile").closest('[role="treeitem"]');
+      expect(step2Row).toBeTruthy();
+      const retryBtn = within(step2Row!).getByLabelText(/retry/i);
+      fireEvent.click(retryBtn);
+
+      expect(mockRetryStep).toHaveBeenCalledWith("step-2");
+    });
+
+    it("non-error nodes do not show a retry button", () => {
+      setupStore(TEST_TREE);
+      render(<AgentStepTree />);
+
+      // step-1 is a thinking node — no retry button
+      const step1Row = screen.getByText("Analyzing request").closest('[role="treeitem"]');
+      expect(step1Row).toBeTruthy();
+      const retryBtn = within(step1Row!).queryByLabelText(/retry/i);
+      expect(retryBtn).toBeNull();
+    });
+  });
+
+  // ---- 7. Node delete action ----
+  describe("node delete action", () => {
+    it("clicking delete button on a node calls deleteStep", () => {
+      setupStore(TEST_TREE);
+      render(<AgentStepTree />);
+
+      // step-1 row — find its delete button
+      const step1Row = screen.getByText("Analyzing request").closest('[role="treeitem"]');
+      expect(step1Row).toBeTruthy();
+      const deleteBtn = within(step1Row!).getByLabelText(/delete/i);
+      fireEvent.click(deleteBtn);
+
+      expect(mockDeleteStep).toHaveBeenCalledWith("step-1");
+    });
+
+    it("clicking delete on the second node calls deleteStep with its id", () => {
+      setupStore(TEST_TREE);
+      render(<AgentStepTree />);
+
+      const step2Row = screen.getByText("Failed to compile").closest('[role="treeitem"]');
+      const deleteBtn = within(step2Row!).getByLabelText(/delete/i);
+      fireEvent.click(deleteBtn);
+
+      expect(mockDeleteStep).toHaveBeenCalledWith("step-2");
+    });
+  });
+
+  // ---- 8. Expand all / Collapse all full flow ----
+  describe("expand all and collapse all flow", () => {
+    it("expand all shows all nodes, collapse all returns to roots only", () => {
+      // Start collapsed
+      setupStore(TEST_TREE);
+      const { rerender } = render(<AgentStepTree />);
+
+      // Only root nodes visible — 2 nodes
+      expect(screen.getByText("2 nodes")).toBeInTheDocument();
+
+      // Click expand all
+      fireEvent.click(screen.getByText("Expand all"));
+      expect(mockExpandAll).toHaveBeenCalled();
+
+      // Simulate store update after expandAll: all nodes expanded
+      const EXPANDED_TREE = TEST_TREE.map((n) => ({
+        ...n,
+        expanded: true,
+        children: n.children.map((c: any) => ({ ...c, expanded: true })),
+      }));
+      setupStore(EXPANDED_TREE);
+      rerender(<AgentStepTree />);
+
+      // Now 2 roots + 2 children = 4 nodes
+      expect(screen.getByText("4 nodes")).toBeInTheDocument();
+
+      // Click collapse all
+      fireEvent.click(screen.getByText("Collapse all"));
+      expect(mockCollapseAll).toHaveBeenCalled();
+
+      // Simulate store update after collapseAll
+      setupStore(TEST_TREE);
+      rerender(<AgentStepTree />);
+
+      // Back to 2 nodes
+      expect(screen.getByText("2 nodes")).toBeInTheDocument();
     });
   });
 });

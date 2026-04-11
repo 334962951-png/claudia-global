@@ -8,7 +8,7 @@
 
 import React, { useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, RotateCcw, Trash2 } from 'lucide-react';
 
 import { useStepTreeStore } from '@/lib/stepTreeStore';
 import { cn } from '@/lib/utils';
@@ -110,6 +110,8 @@ const StepNodeRow: React.FC<StepNodeProps> = ({
   });
 
   const toggleExpand = useStepTreeStore((s) => s.toggleExpand);
+  const retryStep = useStepTreeStore((s) => s.retryStep);
+  const deleteStep = useStepTreeStore((s) => s.deleteStep);
   const ref = useRef<HTMLDivElement>(null);
 
   // Scroll focused node into view
@@ -208,6 +210,26 @@ const StepNodeRow: React.FC<StepNodeProps> = ({
           <span className="text-xs text-muted-foreground flex-shrink-0">
             {formatTimestamp(node.timestamp)}
           </span>
+
+          {/* Node actions — visible on hover */}
+          <div className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {node.type === 'error' && (
+              <button
+                onClick={(e) => { e.stopPropagation(); retryStep(node.id); }}
+                className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                aria-label={`Retry ${node.label}`}
+              >
+                <RotateCcw className="h-3 w-3" />
+              </button>
+            )}
+            <button
+              onClick={(e) => { e.stopPropagation(); deleteStep(node.id); }}
+              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+              aria-label={`Delete ${node.label}`}
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </div>
         </div>
 
         {/* Content preview when collapsed */}

@@ -51,6 +51,10 @@ interface StepTreeState {
   collapseAll: () => void;
   setViewMode: (mode: ViewMode) => void;
   clearTree: () => void;
+  /** Remove a node from the tree */
+  deleteStep: (id: string) => void;
+  /** Retry a failed step (resets error to action) */
+  retryStep: (id: string) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -116,6 +120,30 @@ function addChildInTree(nodes: StepNode[], parentId: string, child: StepNode): S
   });
 }
 
+/** Deeply remove a node from the tree */
+function deleteFromTree(nodes: StepNode[], id: string): StepNode[] {
+  return nodes
+    .filter((n) => n.id !== id)
+    .map((n) =>
+      n.children.length > 0
+        ? { ...n, children: deleteFromTree(n.children, id) }
+        : n
+    );
+}
+
+/** Deeply reset an error node for retry */
+function retryInTree(nodes: StepNode[], id: string): StepNode[] {
+  return nodes.map((n) => {
+    if (n.id === id) {
+      return { ...n, type: 'action', content: `Retrying: ${n.label}...` };
+    }
+    if (n.children.length > 0) {
+      return { ...n, children: retryInTree(n.children, id) };
+    }
+    return n;
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
@@ -162,6 +190,14 @@ export const useStepTreeStore = create<StepTreeState>()(
 
     clearTree: () => {
       set({ stepTree: [], _idCounter: 0 });
+    },
+
+    deleteStep: (id) => {
+      set((s) => ({ stepTree: deleteFromTree(s.stepTree, id) }));
+    },
+
+    retryStep: (id) => {
+      set((s) => ({ stepTree: retryInTree(s.stepTree, id) }));
     },
   })),
 );

@@ -17,7 +17,7 @@ vi.mock("framer-motion", () => ({
 
 // Mock react-syntax-highlighter
 vi.mock("react-syntax-highlighter", () => ({
-  Prism: vi.fn(({ children, ..._props }: any) => (
+  Prism: vi.fn(({ children }: any) => (
     <pre data-testid="syntax-highlighter">{children}</pre>
   )),
 }));

@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { within } from "@testing-library/react";
 
 import { CommandPalette } from "../CommandPalette";
-import { useCommandPalette } from "@/contexts/CommandPaletteContext";
 
 // ---------------------------------------------------------------------------
 // jsdom polyfill — jsdom doesn't implement scrollIntoView
