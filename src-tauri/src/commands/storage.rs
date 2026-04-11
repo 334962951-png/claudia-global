@@ -192,51 +192,75 @@ pub async fn storage_read_table(
         .map_err(|e| e.to_string())?;
     
     drop(pragma_stmt);
-    
-    // Build query with optional search
-    let (query, count_query) = if let Some(search) = &searchQuery {
-        // Create search conditions for all text columns
-        let search_conditions: Vec<String> = columns
+
+    // Calculate pagination offset
+    let offset = (page - 1) * pageSize;
+
+    // Build query with optional search — uses parameterized queries for safety
+    let (count_query, count_param_refs, data_query, data_param_refs) = if let Some(search) = &searchQuery {
+        let text_columns: Vec<&str> = columns
             .iter()
             .filter(|col| col.type_name.contains("TEXT") || col.type_name.contains("VARCHAR"))
-            .map(|col| format!("{} LIKE '%{}%'", col.name, search.replace("'", "''")))
+            .map(|col| col.name.as_str())
             .collect();
-        
-        if search_conditions.is_empty() {
+
+        if text_columns.is_empty() {
             (
-                format!("SELECT * FROM {} LIMIT ? OFFSET ?", tableName),
-                format!("SELECT COUNT(*) FROM {}", tableName),
+                format!("SELECT COUNT(*) FROM \"{}\"", tableName),
+                vec![] as Vec<String>,
+                format!("SELECT * FROM \"{}\" LIMIT ? OFFSET ?", tableName),
+                vec![pageSize.to_string(), offset.to_string()],
             )
         } else {
-            let where_clause = search_conditions.join(" OR ");
+            let like_conditions: Vec<String> = text_columns
+                .iter()
+                .map(|col| format!("\"{}\" LIKE ?", col))
+                .collect();
+            let where_clause = like_conditions.join(" OR ");
+            let pattern = format!("%{}%", search);
+
+            // Count params: only search patterns
+            let mut c_refs: Vec<String> = text_columns.iter().map(|_| pattern.clone()).collect();
+            // Data params: search patterns + LIMIT + OFFSET
+            let mut d_refs: Vec<String> = text_columns.iter().map(|_| pattern.clone()).collect();
+            d_refs.push(pageSize.to_string());
+            d_refs.push(offset.to_string());
+
             (
-                format!("SELECT * FROM {} WHERE {} LIMIT ? OFFSET ?", tableName, where_clause),
-                format!("SELECT COUNT(*) FROM {} WHERE {}", tableName, where_clause),
+                format!("SELECT COUNT(*) FROM \"{}\" WHERE {}", tableName, where_clause),
+                c_refs,
+                format!("SELECT * FROM \"{}\" WHERE {} LIMIT ? OFFSET ?", tableName, where_clause),
+                d_refs,
             )
         }
     } else {
         (
-            format!("SELECT * FROM {} LIMIT ? OFFSET ?", tableName),
-            format!("SELECT COUNT(*) FROM {}", tableName),
+            format!("SELECT COUNT(*) FROM \"{}\"", tableName),
+            vec![] as Vec<String>,
+            format!("SELECT * FROM \"{}\" LIMIT ? OFFSET ?", tableName),
+            vec![pageSize.to_string(), offset.to_string()],
         )
     };
     
-    // Get total row count
+    // Get total row count (using parameterized query)
     let total_rows: i64 = conn
-        .query_row(&count_query, [], |row| row.get(0))
+        .query_row(
+            &count_query,
+            rusqlite::params_from_iter(count_param_refs.iter()),
+            |row| row.get(0),
+        )
         .unwrap_or(0);
-    
+
     // Calculate pagination
-    let offset = (page - 1) * pageSize;
     let total_pages = (total_rows as f64 / pageSize as f64).ceil() as i64;
-    
-    // Query data
+
+    // Query data (using parameterized query)
     let mut data_stmt = conn
-        .prepare(&query)
+        .prepare(&data_query)
         .map_err(|e| e.to_string())?;
-    
+
     let rows: Vec<Map<String, JsonValue>> = data_stmt
-        .query_map(params![pageSize, offset], |row| {
+        .query_map(rusqlite::params_from_iter(data_param_refs.iter()), |row| {
             let mut row_map = Map::new();
             
             for (idx, col) in columns.iter().enumerate() {
@@ -518,10 +542,17 @@ pub async fn storage_execute_sql(
 ) -> Result<QueryResult, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
     
-    // Check if it's a SELECT query
+    // Security: storage_execute_sql is a developer tool (Storage tab).
+    // Restrict to SELECT-only queries to prevent data destruction.
     let is_select = query.trim().to_uppercase().starts_with("SELECT");
-    
-    if is_select {
+
+    if !is_select {
+        return Err(
+            "storage_execute_sql only supports SELECT queries. \
+             Use the table edit functions for data modifications."
+                .to_string(),
+        );
+    }
         // Handle SELECT queries
         let mut stmt = conn.prepare(&query).map_err(|e| e.to_string())?;
         let column_count = stmt.column_count();
@@ -563,17 +594,6 @@ pub async fn storage_execute_sql(
             rows_affected: None,
             last_insert_rowid: None,
         })
-    } else {
-        // Handle non-SELECT queries (INSERT, UPDATE, DELETE, etc.)
-        let rows_affected = conn.execute(&query, []).map_err(|e| e.to_string())?;
-        
-        Ok(QueryResult {
-            columns: vec![],
-            rows: vec![],
-            rows_affected: Some(rows_affected as i64),
-            last_insert_rowid: Some(conn.last_insert_rowid()),
-        })
-    }
 }
 
 /// Reset the entire database by dropping and recreating all tables

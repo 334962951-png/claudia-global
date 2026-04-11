@@ -18,28 +18,14 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost blob: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'; connect-src 'self' ipc: https://ipc.localhost; media-src 'self' data:",
+      "csp": "default-src 'self' http://localhost:1420; img-src 'self' asset: https://asset.localhost blob: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval' http://localhost:1420; connect-src 'self' ipc: https://ipc.localhost http://localhost:1420 ws://localhost:1420 ws://localhost:1421; media-src 'self' data:",
       "assetProtocol": {
         "enable": true,
-        "scope": ["**"]
+        "scope": ["$APPDATA/**", "$RESOURCE/**"]
       }
     }
   },
   "plugins": {
-    "fs": {
-      "scope": ["$HOME/**"],
-      "allow": [
-        "readFile",
-        "writeFile",
-        "readDir",
-        "copyFile",
-        "createDir",
-        "removeDir",
-        "removeFile",
-        "renameFile",
-        "exists"
-      ]
-    },
     "shell": {
       "open": true
     }

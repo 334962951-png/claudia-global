@@ -2,6 +2,7 @@ use chrono::{DateTime, Local, NaiveDate};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::collections::{HashMap, HashSet};
+use std::cmp::Ordering;
 use std::fs;
 use std::path::PathBuf;
 use tauri::command;
@@ -506,13 +507,13 @@ pub fn get_usage_stats(days: Option<u32>) -> Result<UsageStats, String> {
 
     // Convert hashmaps to sorted vectors
     let mut by_model: Vec<ModelUsage> = model_stats.into_values().collect();
-    by_model.sort_by(|a, b| b.total_cost.partial_cmp(&a.total_cost).unwrap());
+    by_model.sort_by(|a, b| b.total_cost.partial_cmp(&a.total_cost).unwrap_or(Ordering::Equal));
 
     let mut by_date: Vec<DailyUsage> = daily_stats.into_values().collect();
     by_date.sort_by(|a, b| b.date.cmp(&a.date));
 
     let mut by_project: Vec<ProjectUsage> = project_stats.into_values().collect();
-    by_project.sort_by(|a, b| b.total_cost.partial_cmp(&a.total_cost).unwrap());
+    by_project.sort_by(|a, b| b.total_cost.partial_cmp(&a.total_cost).unwrap_or(Ordering::Equal));
 
     Ok(UsageStats {
         total_cost,
@@ -701,13 +702,13 @@ pub fn get_usage_by_date_range(start_date: String, end_date: String) -> Result<U
 
     // Convert hashmaps to sorted vectors
     let mut by_model: Vec<ModelUsage> = model_stats.into_values().collect();
-    by_model.sort_by(|a, b| b.total_cost.partial_cmp(&a.total_cost).unwrap());
+    by_model.sort_by(|a, b| b.total_cost.partial_cmp(&a.total_cost).unwrap_or(Ordering::Equal));
 
     let mut by_date: Vec<DailyUsage> = daily_stats.into_values().collect();
     by_date.sort_by(|a, b| b.date.cmp(&a.date));
 
     let mut by_project: Vec<ProjectUsage> = project_stats.into_values().collect();
-    by_project.sort_by(|a, b| b.total_cost.partial_cmp(&a.total_cost).unwrap());
+    by_project.sort_by(|a, b| b.total_cost.partial_cmp(&a.total_cost).unwrap_or(Ordering::Equal));
 
     Ok(UsageStats {
         total_cost,

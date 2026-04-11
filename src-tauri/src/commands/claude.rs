@@ -1924,8 +1924,10 @@ async fn spawn_claude_process(app: AppHandle, mut cmd: Command, prompt: String, 
             }
 
             // Emit the line to the frontend with session isolation if we have session ID
-            if let Some(ref session_id) = *session_id_holder_clone.lock().unwrap() {
-                let _ = app_handle.emit(&format!("claude-output:{}", session_id), &line);
+            if let Ok(guard) = session_id_holder_clone.lock() {
+                if let Some(ref session_id) = *guard {
+                    let _ = app_handle.emit(&format!("claude-output:{}", session_id), &line);
+                }
             }
             // Also emit to the generic event for backward compatibility
             let _ = app_handle.emit("claude-output", &line);
@@ -1971,11 +1973,13 @@ async fn spawn_claude_process(app: AppHandle, mut cmd: Command, prompt: String, 
                     log::info!("Claude process exited with status: {}", status);
                     // Add a small delay to ensure all messages are processed
                     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-                    if let Some(ref session_id) = *session_id_holder_clone3.lock().unwrap() {
-                        let _ = app_handle_wait.emit(
-                            &format!("claude-complete:{}", session_id),
-                            status.success(),
-                        );
+                    if let Ok(guard) = session_id_holder_clone3.lock() {
+                        if let Some(ref session_id) = *guard {
+                            let _ = app_handle_wait.emit(
+                                &format!("claude-complete:{}", session_id),
+                                status.success(),
+                            );
+                        }
                     }
                     // Also emit to the generic event for backward compatibility
                     let _ = app_handle_wait.emit("claude-complete", status.success());
@@ -1984,9 +1988,11 @@ async fn spawn_claude_process(app: AppHandle, mut cmd: Command, prompt: String, 
                     log::error!("Failed to wait for Claude process: {}", e);
                     // Add a small delay to ensure all messages are processed
                     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-                    if let Some(ref session_id) = *session_id_holder_clone3.lock().unwrap() {
-                        let _ = app_handle_wait
-                            .emit(&format!("claude-complete:{}", session_id), false);
+                    if let Ok(guard) = session_id_holder_clone3.lock() {
+                        if let Some(ref session_id) = *guard {
+                            let _ = app_handle_wait
+                                .emit(&format!("claude-complete:{}", session_id), false);
+                        }
                     }
                     // Also emit to the generic event for backward compatibility
                     let _ = app_handle_wait.emit("claude-complete", false);
@@ -2102,8 +2108,10 @@ async fn spawn_claude_sidecar(
                         }
 
                         // Emit the line to the frontend with session isolation if we have session ID
-                        if let Some(ref session_id) = *session_id_holder_clone.lock().unwrap() {
-                            let _ = app_handle.emit(&format!("claude-output:{}", session_id), line_str);
+                        if let Ok(guard) = session_id_holder_clone.lock() {
+                            if let Some(ref session_id) = *guard {
+                                let _ = app_handle.emit(&format!("claude-output:{}", session_id), line_str);
+                            }
                         }
                         // Also emit to the generic event for backward compatibility
                         let _ = app_handle.emit("claude-output", line_str);
@@ -2117,8 +2125,10 @@ async fn spawn_claude_sidecar(
                         log::error!("Claude sidecar stderr: {}", line_str);
 
                         // Emit error lines to the frontend with session isolation if we have session ID
-                        if let Some(ref session_id) = *session_id_holder_clone.lock().unwrap() {
-                            let _ = app_handle.emit(&format!("claude-error:{}", session_id), line_str);
+                        if let Ok(guard) = session_id_holder_clone.lock() {
+                            if let Some(ref session_id) = *guard {
+                                let _ = app_handle.emit(&format!("claude-error:{}", session_id), line_str);
+                            }
                         }
                         // Also emit to the generic event for backward compatibility
                         let _ = app_handle.emit("claude-error", line_str);
@@ -2132,8 +2142,10 @@ async fn spawn_claude_sidecar(
 
                     let success = payload.code.unwrap_or(-1) == 0;
 
-                    if let Some(ref session_id) = *session_id_holder_clone.lock().unwrap() {
-                        let _ = app_handle.emit(&format!("claude-complete:{}", session_id), success);
+                    if let Ok(guard) = session_id_holder_clone.lock() {
+                        if let Some(ref session_id) = *guard {
+                            let _ = app_handle.emit(&format!("claude-complete:{}", session_id), success);
+                        }
                     }
                     // Also emit to the generic event for backward compatibility
                     let _ = app_handle.emit("claude-complete", success);

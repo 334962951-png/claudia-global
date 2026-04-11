@@ -45,6 +45,11 @@ export default defineConfig(({ mode }) => ({
     
     // development模式下禁用压缩
     minify: mode === 'development' ? false : 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
 
     rollupOptions: {
       output: {
