@@ -18,6 +18,32 @@ vi.mock("@tauri-apps/plugin-dialog", () => ({
   open: vi.fn(),
 }));
 
+// Mock ThemeContext since Settings now uses useTheme via GeneralSettings
+vi.mock("@/contexts/ThemeContext", () => ({
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useThemeContext: () => ({
+    theme: "dark",
+    setTheme: vi.fn(),
+    accentColor: "#d97757",
+    setAccentColor: vi.fn(),
+    fontFamily: "sans-serif",
+    setFontFamily: vi.fn(),
+    customColors: {},
+    setCustomColors: vi.fn(),
+  }),
+}));
+
+vi.mock("@/hooks/useTheme", () => ({
+  useTheme: () => ({
+    theme: "dark",
+    setTheme: vi.fn(),
+    accentColor: "#d97757",
+    setAccentColor: vi.fn(),
+    fontFamily: "sans-serif",
+    setFontFamily: vi.fn(),
+  }),
+}));
+
 /**
  * Test suite for Settings component
  *

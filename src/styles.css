@@ -54,6 +54,14 @@
   --color-token-deleted: oklch(0.63 0.22 25);
   --color-token-regex: oklch(0.70 0.14 200);
   --color-token-inline-code-bg: oklch(0.50 0.12 295 / 0.1);
+  /* Extended token colors */
+  --color-token-number: oklch(0.70 0.17 75);
+  --color-token-boolean: oklch(0.65 0.18 330);
+  --color-token-constant: oklch(0.75 0.18 75);
+  --color-token-annotation: oklch(0.65 0.16 310);
+  --color-token-namespace: oklch(0.60 0.14 270);
+  --color-token-type: oklch(0.62 0.18 185);
+  --color-token-template: oklch(0.68 0.14 195);
 
   /* Scrollbar */
   --color-scrollbar-thumb: oklch(0.70 0.02 240 / 0.5);
@@ -135,6 +143,14 @@
   --color-token-deleted: oklch(0.60 0.22 25);
   --color-token-regex: oklch(0.65 0.14 200);
   --color-token-inline-code-bg: oklch(0.50 0.12 295 / 0.1);
+  /* Extended token colors */
+  --color-token-number: oklch(0.58 0.17 55);
+  --color-token-boolean: oklch(0.52 0.18 330);
+  --color-token-constant: oklch(0.60 0.18 55);
+  --color-token-annotation: oklch(0.52 0.16 310);
+  --color-token-namespace: oklch(0.48 0.14 270);
+  --color-token-type: oklch(0.52 0.18 185);
+  --color-token-template: oklch(0.55 0.14 195);
 
   /* Scrollbar */
   --color-scrollbar-thumb: oklch(0.55 0.02 240 / 0.4);
@@ -184,6 +200,14 @@
   --color-token-deleted: oklch(0.63 0.22 25);
   --color-token-regex: oklch(0.72 0.14 200);
   --color-token-inline-code-bg: oklch(0.50 0.12 295 / 0.1);
+  /* Extended token colors */
+  --color-token-number: oklch(0.72 0.17 75);
+  --color-token-boolean: oklch(0.67 0.18 330);
+  --color-token-constant: oklch(0.78 0.18 75);
+  --color-token-annotation: oklch(0.67 0.16 310);
+  --color-token-namespace: oklch(0.62 0.14 270);
+  --color-token-type: oklch(0.64 0.18 185);
+  --color-token-template: oklch(0.70 0.14 195);
 
   /* Scrollbar */
   --color-scrollbar-thumb: oklch(0.70 0.02 240 / 0.5);
@@ -233,6 +257,14 @@
   --color-token-deleted: oklch(0.58 0.24 25);
   --color-token-regex: oklch(0.55 0.16 200);
   --color-token-inline-code-bg: oklch(0.35 0.12 295 / 0.1);
+  /* Extended token colors */
+  --color-token-number: oklch(0.52 0.20 25);
+  --color-token-boolean: oklch(0.40 0.20 330);
+  --color-token-constant: oklch(0.55 0.22 25);
+  --color-token-annotation: oklch(0.40 0.18 310);
+  --color-token-namespace: oklch(0.38 0.16 270);
+  --color-token-type: oklch(0.42 0.20 185);
+  --color-token-template: oklch(0.45 0.16 195);
 
   /* Scrollbar */
   --color-scrollbar-thumb: oklch(0.50 0.02 240 / 0.4);

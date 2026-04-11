@@ -23,6 +23,13 @@ export const getClaudeSyntaxTheme = (_theme: ThemeMode): { [key: string]: React.
   const keyword = 'var(--color-token-keyword)';
   const variable = 'var(--color-token-variable)';
   const operator = 'var(--color-token-operator)';
+  const number = 'var(--color-token-number)';
+  const bool = 'var(--color-token-boolean)';
+  const constant = 'var(--color-token-constant)';
+  const annotation = 'var(--color-token-annotation)';
+  const namespace = 'var(--color-token-namespace)';
+  const type = 'var(--color-token-type)';
+  const template = 'var(--color-token-template)';
 
   return {
     'code[class*="language-"]': {
@@ -91,7 +98,7 @@ export const getClaudeSyntaxTheme = (_theme: ThemeMode): { [key: string]: React.
       color: punctuation,
     },
     'namespace': {
-      opacity: '0.7',
+      color: namespace,
     },
     'property': {
       color: property,
@@ -100,16 +107,16 @@ export const getClaudeSyntaxTheme = (_theme: ThemeMode): { [key: string]: React.
       color: tag,
     },
     'boolean': {
-      color: property,
+      color: bool,
     },
     'number': {
-      color: property,
+      color: number,
     },
     'constant': {
-      color: property,
+      color: constant,
     },
     'symbol': {
-      color: property,
+      color: constant,
     },
     'deleted': {
       color: 'var(--color-token-deleted)',
@@ -152,7 +159,7 @@ export const getClaudeSyntaxTheme = (_theme: ThemeMode): { [key: string]: React.
       color: fn,
     },
     'class-name': {
-      color: property,
+      color: type,
     },
     'regex': {
       color: 'var(--color-token-regex)',
@@ -186,13 +193,19 @@ export const getClaudeSyntaxTheme = (_theme: ThemeMode): { [key: string]: React.
       color: property,
     },
     'annotation': {
-      color: comment,
+      color: annotation,
     },
     'type': {
-      color: variable,
+      color: type,
     },
     'module': {
-      color: tag,
+      color: namespace,
+    },
+    'template': {
+      color: template,
+    },
+    'template-string': {
+      color: template,
     },
   };
 };
