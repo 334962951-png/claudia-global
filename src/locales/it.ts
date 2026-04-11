@@ -504,6 +504,11 @@ export const it: Translations = {
     importedServersPartial: "Importati {imported} server, {failed} falliti",
     mcpManagerTitle: "Server MCP",
     mcpManagerSubtitle: "Gestisci i server del Protocollo di Contesto del Modello",
+    noMcpServers: "Nessun server MCP",
+    lastHeartbeat: "Ultimo heartbeat",
+    mcpServerConnected: "Server MCP connesso",
+    mcpServerDisconnected: "Server MCP disconnesso",
+    openMcpSettings: "Apri impostazioni MCP",
   },
 
   usage: {

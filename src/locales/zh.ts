@@ -498,6 +498,12 @@ export const zh: Translations = {
     importedServersPartial: "导入了 {imported} 个服务器，{failed} 个失败",
     mcpManagerTitle: "MCP 服务器",
     mcpManagerSubtitle: "管理模型上下文协议服务器",
+    // MCPStatusIndicator
+    noMcpServers: "无 MCP 服务器",
+    lastHeartbeat: "最近心跳",
+    mcpServerConnected: "MCP 服务器已连接",
+    mcpServerDisconnected: "MCP 服务器已断开",
+    openMcpSettings: "打开 MCP 设置",
   },
 
   usage: {

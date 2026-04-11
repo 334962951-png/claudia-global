@@ -493,6 +493,11 @@ export const ar: Translations = {
     importedServersPartial: "تم استيراد {imported} خادم، فشل {failed}",
     mcpManagerTitle: "خوادم MCP",
     mcpManagerSubtitle: "إدارة خوادم بروتوكول سياق النموذج",
+    noMcpServers: "لا توجد خوادم MCP",
+    lastHeartbeat: "آخر نبضة",
+    mcpServerConnected: "تم连接 خادم MCP",
+    mcpServerDisconnected: "تم قطع اتصال خادم MCP",
+    openMcpSettings: "فتح إعدادات MCP",
   },
 
   usage: {

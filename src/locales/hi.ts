@@ -507,6 +507,11 @@ export const hi: Translations = {
     importedServersPartial: "{imported} सर्वर आयात किए गए, {failed} विफल",
     mcpManagerTitle: "MCP सर्वर",
     mcpManagerSubtitle: "मॉडल कॉन्टेक्स्ट प्रोटोकॉल सर्वर प्रबंधित करें",
+    noMcpServers: "कोई MCP सर्वर नहीं",
+    lastHeartbeat: "अंतिम हार्टबीट",
+    mcpServerConnected: "MCP सर्वर कनेक्ट हुआ",
+    mcpServerDisconnected: "MCP सर्वर डिस्कनेक्ट हुआ",
+    openMcpSettings: "MCP सेटिंग्स खोलें",
   },
   usage: {
     title: "उपयोग डैशबोर्ड",

@@ -12,6 +12,7 @@ import {
 import React, { useEffect, useState } from "react";
 
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { MCPStatusIndicator } from "@/components/MCPStatusIndicator";
 import { Button } from "@/components/ui/button";
 import { Popover } from "@/components/ui/popover";
 import { api, type ClaudeVersionStatus } from "@/lib/api";
@@ -199,6 +200,8 @@ export const Topbar: React.FC<TopbarProps> = ({
 
       {/* Action Buttons */}
       <div className="flex items-center space-x-2">
+        <MCPStatusIndicator onOpenMCPSettings={onMCPClick} />
+
         {onAgentsClick && (
           <Button variant="ghost" size="sm" onClick={onAgentsClick} className="text-xs">
             <Bot className="mr-2 h-3 w-3" />

@@ -511,6 +511,11 @@ export const pt: Translations = {
     importedServersPartial: "Importados {imported} servidores, {failed} falharam",
     mcpManagerTitle: "Servidores MCP",
     mcpManagerSubtitle: "Gerenciar servidores do Protocolo de Contexto de Modelo",
+    noMcpServers: "Nenhum servidor MCP",
+    lastHeartbeat: "Último heartbeat",
+    mcpServerConnected: "Servidor MCP conectado",
+    mcpServerDisconnected: "Servidor MCP desconectado",
+    openMcpSettings: "Abrir configurações MCP",
   },
 
   usage: {

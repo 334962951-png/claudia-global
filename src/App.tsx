@@ -3,6 +3,7 @@ import { Plus, Loader2, Bot, FolderCode } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 
 import { AgentsModal } from "@/components/AgentsModal";
+import { CommandPalette } from "@/components/CommandPalette";
 import { AnalyticsConsentBanner } from "@/components/AnalyticsConsent";
 import { CCAgents } from "@/components/CCAgents";
 import { ClaudeBinaryDialog } from "@/components/ClaudeBinaryDialog";
@@ -15,6 +16,8 @@ import { ProjectSettings } from "@/components/ProjectSettings";
 import { RunningClaudeSessions } from "@/components/RunningClaudeSessions";
 import { SessionList } from "@/components/SessionList";
 import { Settings } from "@/components/Settings";
+import { ProjectSidebar } from "@/components/Sidebar/ProjectSidebar";
+import { SessionSidebar } from "@/components/Sidebar/SessionSidebar";
 import { TabContent } from "@/components/TabContent";
 import { TabManager } from "@/components/TabManager";
 import { Topbar } from "@/components/Topbar";
@@ -25,6 +28,7 @@ import { UsageDashboard } from "@/components/UsageDashboard";
 import { TabProvider } from "@/contexts/TabContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { CommandPaletteContext } from "@/contexts/CommandPaletteContext";
 import { useAppLifecycle, useTrackEvent } from "@/hooks";
 import { useTabState } from "@/hooks/useTabState";
 import { api, type Project, type Session, type ClaudeMdFile } from "@/lib/api";
@@ -76,7 +80,7 @@ type View =
 function AppContent() {
   const { t } = useI18n();
   const [view, setView] = useState<View>("tabs");
-  const { createClaudeMdTab, createSettingsTab, createUsageTab, createMCPTab } = useTabState();
+  const { createClaudeMdTab, createSettingsTab, createUsageTab, createMCPTab, createProjectsTab } = useTabState();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -92,6 +96,10 @@ function AppContent() {
   const [projectForSettings, setProjectForSettings] = useState<Project | null>(null);
   const [previousView] = useState<View>("welcome");
   const [showAgentsModal, setShowAgentsModal] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarSelectedProject, setSidebarSelectedProject] = useState<Project | null>(null);
+  const [sidebarSelectedSessionId, setSidebarSelectedSessionId] = useState<string | null>(null);
 
   // Initialize analytics lifecycle tracking
   useAppLifecycle();
@@ -204,6 +212,22 @@ function AppContent() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [view]);
+
+  // Global Cmd+K / Ctrl+K command palette shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: globalThis.KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+      const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+      if (modKey && e.key === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Listen for Claude not found events
   useEffect(() => {
@@ -518,11 +542,44 @@ function AppContent() {
 
       case "tabs":
         return (
-          <div className="h-full flex flex-col">
-            <TabManager className="flex-shrink-0" />
-            <div className="flex-1 overflow-hidden">
-              <TabContent />
-            </div>
+          <div className="h-full w-full flex overflow-hidden">
+            {/* Dual-layer sidebar */}
+            <ProjectSidebar
+              selectedProjectId={sidebarSelectedProject?.id ?? null}
+              onProjectSelect={async (project) => {
+                setSidebarSelectedProject(project);
+                setSidebarSelectedSessionId(null);
+              }}
+              onProjectSettings={handleProjectSettings}
+            />
+            <SessionSidebar
+              project={sidebarSelectedProject}
+              selectedSessionId={sidebarSelectedSessionId}
+              onSessionSelect={(session) => {
+                setSidebarSelectedSessionId(session.id);
+                window.dispatchEvent(
+                  new CustomEvent("open-session-in-tab", {
+                    detail: { session, projectId: session.project_id, projectPath: session.project_path },
+                  })
+                );
+              }}
+              onBack={() => {
+                setSidebarSelectedProject(null);
+                setSidebarSelectedSessionId(null);
+              }}
+              onNewSession={() => {
+                window.dispatchEvent(new CustomEvent("create-chat-tab"));
+              }}
+              collapsed={sidebarCollapsed}
+              onCollapseToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+            />
+            {/* Main content */}
+            <main className="flex-1 min-w-0 bg-zinc-950 flex flex-col">
+              <TabManager className="flex-shrink-0" />
+              <div className="flex-1 overflow-hidden">
+                <TabContent />
+              </div>
+            </main>
           </div>
         );
 
@@ -593,6 +650,16 @@ function AppContent() {
           <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />
         )}
       </ToastContainer>
+
+      {/* Command Palette (rendered via portal, context-provided) */}
+      <CommandPaletteContext.Provider value={{ isOpen: commandPaletteOpen, setOpen: setCommandPaletteOpen }}>
+        <CommandPalette
+          onOpenSettings={() => createSettingsTab()}
+          onOpenMCP={() => createMCPTab()}
+          onOpenUsage={() => createUsageTab()}
+          onOpenProjects={() => createProjectsTab()}
+        />
+      </CommandPaletteContext.Provider>
     </div>
   );
 }

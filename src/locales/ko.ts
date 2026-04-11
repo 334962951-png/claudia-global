@@ -505,6 +505,11 @@ export const ko: Translations = {
     importedServersPartial: "{imported}개의 서버를 가져왔으며, {failed}개 실패",
     mcpManagerTitle: "MCP 서버",
     mcpManagerSubtitle: "모델 컨텍스트 프로토콜 서버 관리",
+    noMcpServers: "MCP 서버 없음",
+    lastHeartbeat: "마지막 하트비트",
+    mcpServerConnected: "MCP 서버 연결됨",
+    mcpServerDisconnected: "MCP 서버 연결 끊김",
+    openMcpSettings: "MCP 설정 열기",
   },
 
   usage: {

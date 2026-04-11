@@ -503,6 +503,12 @@ export const en: Translations = {
     importedServersPartial: "Imported {imported} servers, {failed} failed",
     mcpManagerTitle: "MCP Servers",
     mcpManagerSubtitle: "Manage Model Context Protocol servers",
+    // MCPStatusIndicator
+    noMcpServers: "No MCP servers",
+    lastHeartbeat: "Last heartbeat",
+    mcpServerConnected: "MCP Server connected",
+    mcpServerDisconnected: "MCP Server disconnected",
+    openMcpSettings: "Open MCP Settings",
   },
 
   usage: {

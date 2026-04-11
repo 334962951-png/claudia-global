@@ -517,6 +517,11 @@ export const de: Translations = {
     importedServersPartial: "{imported} Server importiert, {failed} fehlgeschlagen",
     mcpManagerTitle: "MCP-Server",
     mcpManagerSubtitle: "Modellkontextprotokoll-Server verwalten",
+    noMcpServers: "Keine MCP-Server",
+    lastHeartbeat: "Letzter Heartbeat",
+    mcpServerConnected: "MCP-Server verbunden",
+    mcpServerDisconnected: "MCP-Server getrennt",
+    openMcpSettings: "MCP-Einstellungen öffnen",
   },
 
   usage: {

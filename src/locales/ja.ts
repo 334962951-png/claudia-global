@@ -506,6 +506,11 @@ export const ja: Translations = {
     importedServersPartial: "{imported}個のサーバーがインポートされ、{failed}個が失敗しました",
     mcpManagerTitle: "MCPサーバー",
     mcpManagerSubtitle: "モデルコンテキストプロトコルサーバーを管理",
+    noMcpServers: "MCPサーバーなし",
+    lastHeartbeat: "最終ハートビート",
+    mcpServerConnected: "MCPサーバーが接続されました",
+    mcpServerDisconnected: "MCPサーバーが切断されました",
+    openMcpSettings: "MCP設定を開く",
   },
 
   usage: {

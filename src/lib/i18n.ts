@@ -535,6 +535,12 @@ export interface Translations {
     importedServersPartial: string;
     mcpManagerTitle: string;
     mcpManagerSubtitle: string;
+    // MCPStatusIndicator
+    noMcpServers: string;
+    lastHeartbeat: string;
+    mcpServerConnected: string;
+    mcpServerDisconnected: string;
+    openMcpSettings: string;
   };
 
   // 使用情况仪表板
