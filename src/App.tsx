@@ -8,14 +8,11 @@ import { AnalyticsConsentBanner } from "@/components/AnalyticsConsent";
 import { CCAgents } from "@/components/CCAgents";
 import { ClaudeBinaryDialog } from "@/components/ClaudeBinaryDialog";
 import { ClaudeFileEditor } from "@/components/ClaudeFileEditor";
-import { MarkdownEditor } from "@/components/MarkdownEditor";
-import { MCPManager } from "@/components/MCPManager";
 import { NFOCredits } from "@/components/NFOCredits";
 import { ProjectList } from "@/components/ProjectList";
 import { ProjectSettings } from "@/components/ProjectSettings";
 import { RunningClaudeSessions } from "@/components/RunningClaudeSessions";
 import { SessionList } from "@/components/SessionList";
-import { Settings } from "@/components/Settings";
 import { ProjectSidebar } from "@/components/Sidebar/ProjectSidebar";
 import { SessionSidebar } from "@/components/Sidebar/SessionSidebar";
 import { TabContent } from "@/components/TabContent";
@@ -24,7 +21,6 @@ import { Topbar } from "@/components/Topbar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Toast, ToastContainer } from "@/components/ui/toast";
-import { UsageDashboard } from "@/components/UsageDashboard";
 import { TabProvider } from "@/contexts/TabContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastProvider } from "@/contexts/ToastContext";
@@ -41,18 +37,10 @@ import { OutputCacheProvider } from "@/lib/outputCache";
 type View =
   | "welcome"
   | "projects"
-  | "editor"
   | "claude-file-editor"
-  | "settings"
   | "cc-agents"
-  | "create-agent"
-  | "github-agents"
-  | "agent-execution"
-  | "agent-run-view"
-  | "mcp"
-  | "usage-dashboard"
   | "project-settings"
-  | "tabs"; // New view for tab-based interface
+  | "tabs";
 
 /**
  * AppContent component - Contains the main app logic, wrapped by providers
@@ -396,21 +384,7 @@ function AppContent() {
       case "cc-agents":
         return <CCAgents onBack={() => handleViewChange("welcome")} />;
 
-      case "editor":
-        return (
-          <div className="flex-1 overflow-hidden">
-            <MarkdownEditor onBack={() => handleViewChange("welcome")} />
-          </div>
-        );
-
-      case "settings":
-        return (
-          <div className="flex-1 flex flex-col" style={{ minHeight: 0 }}>
-            <Settings onBack={() => handleViewChange("welcome")} />
-          </div>
-        );
-
-      case "projects":
+case "projects":
         return (
           <div className="flex-1 overflow-y-auto">
             <div className="container mx-auto p-6">
@@ -583,13 +557,7 @@ function AppContent() {
           </div>
         );
 
-      case "usage-dashboard":
-        return <UsageDashboard onBack={() => handleViewChange("welcome")} />;
-
-      case "mcp":
-        return <MCPManager onBack={() => handleViewChange("welcome")} />;
-
-      case "project-settings":
+case "project-settings":
         if (projectForSettings) {
           return (
             <ProjectSettings

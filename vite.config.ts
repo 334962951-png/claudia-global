@@ -63,6 +63,8 @@ export default defineConfig(({ mode }) => ({
           ],
           "editor-vendor": ["@uiw/react-md-editor"],
           "syntax-vendor": ["react-syntax-highlighter"],
+          // Tool widgets — heavy component set, split for better caching
+          "tool-widgets": ["./src/components/ToolWidgets"],
           // Tauri and other utilities
           tauri: ["@tauri-apps/api", "@tauri-apps/plugin-dialog", "@tauri-apps/plugin-shell"],
           utils: ["date-fns", "clsx", "tailwind-merge"],

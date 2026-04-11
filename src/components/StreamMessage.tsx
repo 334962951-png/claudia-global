@@ -115,9 +115,9 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({
     ) {
       return (
         <SummaryWidget
-          summary={String(message.summary || "")}
-          leafUuid={String(message.leafUuid || "")}
-        />
+            summary={String(message.summary || "")}
+            leafUuid={String(message.leafUuid || "")}
+          />
       );
     }
 
@@ -125,11 +125,11 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({
     if (message.type === "system" && message.subtype === "init") {
       return (
         <SystemInitializedWidget
-          sessionId={message.session_id}
-          model={message.model}
-          cwd={message.cwd}
-          tools={message.tools}
-        />
+            sessionId={message.session_id}
+            model={message.model}
+            cwd={message.cwd}
+            tools={message.tools}
+          />
       );
     }
 
@@ -372,10 +372,10 @@ const StreamMessageComponent: React.FC<StreamMessageProps> = ({
                         const [, commandName, commandMessage, commandArgs] = commandMatch;
                         return (
                           <CommandWidget
-                            commandName={commandName.trim()}
-                            commandMessage={commandMessage.trim()}
-                            commandArgs={commandArgs?.trim()}
-                          />
+                              commandName={commandName.trim()}
+                              commandMessage={commandMessage.trim()}
+                              commandArgs={commandArgs?.trim()}
+                            />
                         );
                       }
 

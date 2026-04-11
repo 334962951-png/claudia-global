@@ -293,7 +293,7 @@ describe("AgentStepTree Component", () => {
       // step-2 is an error node — find its retry button via aria-label
       const step2Row = screen.getByText("Failed to compile").closest('[role="treeitem"]');
       expect(step2Row).toBeTruthy();
-      const retryBtn = within(step2Row!).getByLabelText(/retry/i);
+      const retryBtn = within(step2Row! as HTMLElement).getByLabelText(/retry/i);
       fireEvent.click(retryBtn);
 
       expect(mockRetryStep).toHaveBeenCalledWith("step-2");
@@ -306,7 +306,7 @@ describe("AgentStepTree Component", () => {
       // step-1 is a thinking node — no retry button
       const step1Row = screen.getByText("Analyzing request").closest('[role="treeitem"]');
       expect(step1Row).toBeTruthy();
-      const retryBtn = within(step1Row!).queryByLabelText(/retry/i);
+      const retryBtn = within(step1Row! as HTMLElement).queryByLabelText(/retry/i);
       expect(retryBtn).toBeNull();
     });
   });
@@ -320,7 +320,7 @@ describe("AgentStepTree Component", () => {
       // step-1 row — find its delete button
       const step1Row = screen.getByText("Analyzing request").closest('[role="treeitem"]');
       expect(step1Row).toBeTruthy();
-      const deleteBtn = within(step1Row!).getByLabelText(/delete/i);
+      const deleteBtn = within(step1Row! as HTMLElement).getByLabelText(/delete/i);
       fireEvent.click(deleteBtn);
 
       expect(mockDeleteStep).toHaveBeenCalledWith("step-1");
@@ -331,7 +331,7 @@ describe("AgentStepTree Component", () => {
       render(<AgentStepTree />);
 
       const step2Row = screen.getByText("Failed to compile").closest('[role="treeitem"]');
-      const deleteBtn = within(step2Row!).getByLabelText(/delete/i);
+      const deleteBtn = within(step2Row! as HTMLElement).getByLabelText(/delete/i);
       fireEvent.click(deleteBtn);
 
       expect(mockDeleteStep).toHaveBeenCalledWith("step-2");
