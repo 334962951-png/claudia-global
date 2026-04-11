@@ -255,7 +255,43 @@ async fn execute_claude_mcp_command(app_handle: &AppHandle, args: Vec<&str>) -> 
     }
 }
 
-/// Adds a new MCP server
+/// Add a new MCP server configuration via the Claude CLI
+///
+/// Invokes `claude mcp add` with the specified parameters. Supports both `stdio`
+/// (command-based) and `sse` (URL-based) transports. Environment variables are
+/// passed as `KEY=VALUE` strings. A `--` separator is inserted before the command
+/// when arguments contain dashes to prevent CLI parsing issues.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary
+/// * `name` - Unique name for the MCP server
+/// * `transport` - Transport type: `"stdio"` or `"sse"`
+/// * `command` - Command to execute (required for stdio transport)
+/// * `args` - Command arguments (for stdio transport)
+/// * `env` - Environment variables as key-value pairs
+/// * `url` - URL endpoint (required for sse transport)
+/// * `scope` - Configuration scope: `"local"`, `"project"`, or `"user"`
+///
+/// # Returns
+/// `Result<AddServerResult, String>` - Result with success status, message, and
+///   server name if successful
+///
+/// # Errors
+/// Returns an `AddServerResult` with `success: false` if command or URL is missing
+/// for the required transport, or if the CLI invocation fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_add', {
+///   name: string,
+///   transport: 'stdio' | 'sse',
+///   command?: string,
+///   args: string[],
+///   env: Record<string, string>,
+///   url?: string,
+///   scope: 'local' | 'project' | 'user'
+/// }): Promise<AddServerResult>
+/// ```
 #[tauri::command]
 pub async fn mcp_add(
     app: AppHandle,
@@ -347,7 +383,28 @@ pub async fn mcp_add(
     }
 }
 
-/// Lists all configured MCP servers
+/// List all configured MCP servers from the Claude CLI
+///
+/// Invokes `claude mcp list` and parses the structured text output into `MCPServer`
+/// objects. Each server entry is identified by a line beginning with `name:` followed
+/// by a colon, where the name does not contain path separators (`/` or `\`).
+/// Multi-line commands are joined into a single string.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary
+///
+/// # Returns
+/// `Result<Vec<MCPServer>, String>` - List of configured servers with name, transport,
+///   command, args, env, url, scope, is_active, and status fields.
+///   Returns an empty vector if no servers are configured.
+///
+/// # Errors
+/// Returns an error if the Claude binary cannot be found or the CLI command fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_list'): Promise<MCPServer[]>
+/// ```
 #[tauri::command]
 pub async fn mcp_list(app: AppHandle) -> Result<Vec<MCPServer>, String> {
     info!("Listing MCP servers");
@@ -469,7 +526,26 @@ pub async fn mcp_list(app: AppHandle) -> Result<Vec<MCPServer>, String> {
     }
 }
 
-/// Gets details for a specific MCP server
+/// Get detailed configuration for a specific MCP server
+///
+/// Invokes `claude mcp get <name>` and parses the structured text output to extract
+/// scope, transport type, command, args, URL, and environment variables.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary
+/// * `name` - The MCP server name to look up
+///
+/// # Returns
+/// `Result<MCPServer, String>` - Full server configuration including scope,
+///   transport, command/URL, args, env, and status
+///
+/// # Errors
+/// Returns an error if the Claude binary cannot be found or the CLI command fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_get', { name: string }): Promise<MCPServer>
+/// ```
 #[tauri::command]
 pub async fn mcp_get(app: AppHandle, name: String) -> Result<MCPServer, String> {
     info!("Getting MCP server details for: {}", name);
@@ -538,7 +614,25 @@ pub async fn mcp_get(app: AppHandle, name: String) -> Result<MCPServer, String> 
     }
 }
 
-/// Removes an MCP server
+/// Remove an MCP server configuration
+///
+/// Invokes `claude mcp remove <name>` to delete the server configuration from
+/// the Claude settings.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary
+/// * `name` - The MCP server name to remove
+///
+/// # Returns
+/// `Result<String, String>` - CLI output message confirming removal
+///
+/// # Errors
+/// Returns an error if the Claude binary cannot be found or the CLI command fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_remove', { name: string }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn mcp_remove(app: AppHandle, name: String) -> Result<String, String> {
     info!("Removing MCP server: {}", name);
@@ -555,7 +649,34 @@ pub async fn mcp_remove(app: AppHandle, name: String) -> Result<String, String> 
     }
 }
 
-/// Adds an MCP server from JSON configuration
+/// Add an MCP server from a JSON configuration string
+///
+/// Invokes `claude mcp add-json <name> <json>` to add a server using a full JSON
+/// configuration object rather than individual parameters. Useful for importing
+/// server configurations with complex env or arg structures.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary
+/// * `name` - Unique name for the MCP server
+/// * `json_config` - JSON string containing the server configuration object
+/// * `scope` - Configuration scope: `"local"`, `"project"`, or `"user"`
+///
+/// # Returns
+/// `Result<AddServerResult, String>` - Result with success status, message, and
+///   server name if successful
+///
+/// # Errors
+/// Returns an `AddServerResult` with `success: false` if the JSON is invalid or
+/// the CLI invocation fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_add_json', {
+///   name: string,
+///   jsonConfig: string,
+///   scope: 'local' | 'project' | 'user'
+/// }): Promise<AddServerResult>
+/// ```
 #[tauri::command]
 pub async fn mcp_add_json(
     app: AppHandle,
@@ -596,7 +717,31 @@ pub async fn mcp_add_json(
     }
 }
 
-/// Imports MCP servers from Claude Desktop
+/// Import MCP server configurations from Claude Desktop
+///
+/// Reads the Claude Desktop configuration file (`claude_desktop_config.json`) from
+/// the platform-specific Application Support directory, extracts all `mcpServers`
+/// entries, and imports each as a stdio server using `mcp_add_json`. Only supported
+/// on macOS and Linux/WSL.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary
+/// * `scope` - Configuration scope for imported servers: `"local"`, `"project"`, or `"user"`
+///
+/// # Returns
+/// `Result<ImportResult, String>` - Import summary with imported_count, failed_count,
+///   and per-server results (name, success, error)
+///
+/// # Errors
+/// Returns an error if the home/config directory cannot be found, the config file
+/// cannot be read or parsed, or no `mcpServers` key exists in the config
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_add_from_claude_desktop', {
+///   scope: 'local' | 'project' | 'user'
+/// }): Promise<ImportResult>
+/// ```
 #[tauri::command]
 pub async fn mcp_add_from_claude_desktop(
     app: AppHandle,
@@ -749,7 +894,27 @@ pub async fn mcp_add_from_claude_desktop(
     })
 }
 
-/// Starts Claude Code as an MCP server
+/// Start Claude Code as an MCP server via `claude mcp serve`
+///
+/// Spawns a long-running process that runs Claude Code itself as an MCP server.
+/// Uses the bundled sidecar binary on macOS/Linux or the system-installed Claude
+/// binary on other platforms. The process runs in the background and is not
+/// awaited for output. Essential environment variables (PATH, HOME, proxy vars)
+/// are propagated to the child process.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary and spawning the sidecar
+///
+/// # Returns
+/// `Result<String, String>` - Confirmation message `"Claude Code MCP server started"`
+///
+/// # Errors
+/// Returns an error if the Claude binary cannot be found or the process fails to spawn
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_serve'): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn mcp_serve(app: AppHandle) -> Result<String, String> {
     info!("Starting Claude Code as MCP server");
@@ -867,7 +1032,25 @@ pub async fn mcp_serve(app: AppHandle) -> Result<String, String> {
     }
 }
 
-/// Tests connection to an MCP server
+/// Test connection to an MCP server by verifying it exists in the configuration
+///
+/// Uses `claude mcp get <name>` as a lightweight check to confirm the server
+/// is configured and accessible. Does not perform an actual protocol handshake.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary
+/// * `name` - The MCP server name to test
+///
+/// # Returns
+/// `Result<String, String>` - Success message `"Connection to {name} successful"`
+///
+/// # Errors
+/// Returns an error if the server is not found or the CLI command fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_test_connection', { name: string }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn mcp_test_connection(app: AppHandle, name: String) -> Result<String, String> {
     info!("Testing connection to MCP server: {}", name);
@@ -879,7 +1062,25 @@ pub async fn mcp_test_connection(app: AppHandle, name: String) -> Result<String,
     }
 }
 
-/// Resets project-scoped server approval choices
+/// Reset all project-scoped MCP server approval choices
+///
+/// Invokes `claude mcp reset-project-choices` to clear any previously made
+/// approval decisions for project-scoped MCP servers. Users will be prompted
+/// again to approve or deny each server on next use.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary
+///
+/// # Returns
+/// `Result<String, String>` - CLI output confirming the reset
+///
+/// # Errors
+/// Returns an error if the Claude binary cannot be found or the CLI command fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_reset_project_choices'): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn mcp_reset_project_choices(app: AppHandle) -> Result<String, String> {
     info!("Resetting MCP project choices");
@@ -896,7 +1097,22 @@ pub async fn mcp_reset_project_choices(app: AppHandle) -> Result<String, String>
     }
 }
 
-/// Gets the status of MCP servers
+/// Get the runtime status of all MCP servers
+///
+/// Returns a map of server names to their current status (running, error, last_checked).
+/// Currently a placeholder that returns an empty HashMap; full implementation pending.
+///
+/// # Returns
+/// `Result<HashMap<String, ServerStatus>, String>` - Map of server name to status
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_get_server_status'): Promise<Record<string, {
+///   running: boolean;
+///   error: string | null;
+///   lastChecked: number | null;
+/// }>>
+/// ```
 #[tauri::command]
 pub async fn mcp_get_server_status() -> Result<HashMap<String, ServerStatus>, String> {
     info!("Getting MCP server status");
@@ -906,7 +1122,28 @@ pub async fn mcp_get_server_status() -> Result<HashMap<String, ServerStatus>, St
     Ok(HashMap::new())
 }
 
-/// Reads .mcp.json from the current project
+/// Read the `.mcp.json` project configuration file
+///
+/// Reads and parses the MCP server configuration from `.mcp.json` in the given
+/// project directory. Returns an empty `MCPProjectConfig` with no servers if the
+/// file does not exist.
+///
+/// # Arguments
+/// * `project_path` - Absolute path to the project root directory
+///
+/// # Returns
+/// `Result<MCPProjectConfig, String>` - Parsed configuration with `mcp_servers` map,
+///   or an empty config if the file is absent
+///
+/// # Errors
+/// Returns an error if the file exists but cannot be read or its JSON is malformed
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_read_project_config', { projectPath: string }): Promise<{
+///   mcpServers: Record<string, { command: string; args: string[]; env: Record<string, string> }>
+/// }>
+/// ```
 #[tauri::command]
 pub async fn mcp_read_project_config(project_path: String) -> Result<MCPProjectConfig, String> {
     info!("Reading .mcp.json from project: {}", project_path);
@@ -934,7 +1171,30 @@ pub async fn mcp_read_project_config(project_path: String) -> Result<MCPProjectC
     }
 }
 
-/// Saves .mcp.json to the current project
+/// Save the `.mcp.json` project configuration file
+///
+/// Serializes the provided MCP configuration to pretty-printed JSON and writes it
+/// to `.mcp.json` in the given project directory. Overwrites any existing file.
+///
+/// # Arguments
+/// * `project_path` - Absolute path to the project root directory
+/// * `config` - Complete MCP project configuration with `mcp_servers` map
+///
+/// # Returns
+/// `Result<String, String>` - Confirmation message `"Project MCP configuration saved"`
+///
+/// # Errors
+/// Returns an error if serialization fails or the file cannot be written
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('mcp_save_project_config', {
+///   projectPath: string,
+///   config: {
+///     mcpServers: Record<string, { command: string; args: string[]; env: Record<string, string> }>
+///   }
+/// }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn mcp_save_project_config(
     project_path: String,

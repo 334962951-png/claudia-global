@@ -198,6 +198,7 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
           "relative flex-shrink-0 group",
           "w-1 hover:w-2 transition-all duration-150",
           "bg-border hover:bg-primary/50",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           "cursor-col-resize",
           isDragging && "bg-primary w-2"
         )}

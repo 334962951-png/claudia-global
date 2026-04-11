@@ -343,6 +343,31 @@ fn get_all_usage_entries(claude_path: &PathBuf) -> Vec<UsageEntry> {
     all_entries
 }
 
+/// Retrieve aggregated Claude Code usage statistics
+///
+/// Parses all JSONL session log files from `~/.claude/projects/`, calculates costs
+/// using model-specific pricing tables, deduplicates entries by message+request ID,
+/// and returns aggregated statistics broken down by model, date, and project.
+/// Results are sorted by cost (descending) for models and projects, and by date
+/// (descending) for daily breakdowns.
+///
+/// # Arguments
+/// * `days` - Optional number of recent days to include. When `None`, returns all-time stats
+///
+/// # Returns
+/// `Result<UsageStats, String>` - Aggregated usage statistics including:
+///   - Total cost, tokens (input/output/cache), and session count
+///   - Per-model breakdown (`by_model`)
+///   - Per-day breakdown (`by_date`)
+///   - Per-project breakdown (`by_project`)
+///
+/// # Errors
+/// Returns an error if the home directory cannot be found
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_usage_stats', { days?: number }): Promise<UsageStats>
+/// ```
 #[command]
 pub fn get_usage_stats(days: Option<u32>) -> Result<UsageStats, String> {
     let claude_path = dirs::home_dir()
@@ -503,6 +528,31 @@ pub fn get_usage_stats(days: Option<u32>) -> Result<UsageStats, String> {
     })
 }
 
+/// Retrieve aggregated usage statistics within a specific date range
+///
+/// Parses all JSONL session logs from `~/.claude/projects/` and filters entries
+/// to only those within the specified date range (inclusive on both ends).
+/// Dates can be provided in `YYYY-MM-DD` or ISO 8601 datetime format.
+/// Returns the same aggregated breakdown as `get_usage_stats`.
+///
+/// # Arguments
+/// * `start_date` - Start date in `YYYY-MM-DD` or RFC 3339 format (inclusive)
+/// * `end_date` - End date in `YYYY-MM-DD` or RFC 3339 format (inclusive)
+///
+/// # Returns
+/// `Result<UsageStats, String>` - Aggregated usage statistics filtered by date range,
+///   with the same structure as `get_usage_stats`
+///
+/// # Errors
+/// Returns an error if the home directory cannot be found or date parsing fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_usage_by_date_range', {
+///   startDate: string,
+///   endDate: string
+/// }): Promise<UsageStats>
+/// ```
 #[command]
 pub fn get_usage_by_date_range(start_date: String, end_date: String) -> Result<UsageStats, String> {
     let claude_path = dirs::home_dir()
@@ -673,6 +723,31 @@ pub fn get_usage_by_date_range(start_date: String, end_date: String) -> Result<U
     })
 }
 
+/// Retrieve individual usage detail entries with optional filtering
+///
+/// Returns raw `UsageEntry` records from all JSONL session logs, optionally
+/// filtered by project path and/or date string prefix. Unlike the aggregated
+/// commands, this returns individual per-message usage records.
+///
+/// # Arguments
+/// * `project_path` - Optional project path to filter entries by (exact match)
+/// * `date` - Optional date prefix to filter entries by (e.g. `"2025-01-19"`)
+///
+/// # Returns
+/// `Result<Vec<UsageEntry>, String>` - List of individual usage entries, each containing
+///   timestamp, model, token counts (input/output/cache_creation/cache_read),
+///   cost, session ID, and project path
+///
+/// # Errors
+/// Returns an error if the home directory cannot be found
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_usage_details', {
+///   projectPath?: string,
+///   date?: string
+/// }): Promise<UsageEntry[]>
+/// ```
 #[command]
 pub fn get_usage_details(
     project_path: Option<String>,
@@ -697,6 +772,33 @@ pub fn get_usage_details(
     Ok(all_entries)
 }
 
+/// Retrieve per-session usage statistics with optional date range and sort order
+///
+/// Aggregates usage data at the session level (grouped by project_path/session_id),
+/// showing total cost, tokens, entry count, and last-used timestamp per session.
+/// Useful for displaying a session-level cost breakdown in the UI.
+///
+/// # Arguments
+/// * `since` - Optional start date filter in `YYYYMMDD` format (e.g. `"20250119"`)
+/// * `until` - Optional end date filter in `YYYYMMDD` format
+/// * `order` - Optional sort order: `"asc"` for chronological, `"desc"` (default) for newest first
+///
+/// # Returns
+/// `Result<Vec<ProjectUsage>, String>` - List of per-session aggregated stats where
+///   `project_name` contains the session ID and `session_count` is the number of
+///   message entries in that session
+///
+/// # Errors
+/// Returns an error if the home directory cannot be found
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_session_stats', {
+///   since?: string,
+///   until?: string,
+///   order?: 'asc' | 'desc'
+/// }): Promise<ProjectUsage[]>
+/// ```
 #[command]
 pub fn get_session_stats(
     since: Option<String>,

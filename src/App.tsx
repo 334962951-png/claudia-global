@@ -98,7 +98,6 @@ function AppContent() {
 
   // Track user journey milestones
   const [hasTrackedFirstChat] = useState(false);
-  // const [hasTrackedFirstAgent] = useState(false);
 
   // Track when user reaches different journey stages
   useEffect(() => {

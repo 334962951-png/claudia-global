@@ -60,7 +60,7 @@ export class AnalyticsErrorBoundary extends Component<Props, State> {
           </p>
           <button
             onClick={this.reset}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             Try again
           </button>

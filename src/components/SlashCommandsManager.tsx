@@ -510,7 +510,7 @@ export const SlashCommandsManager: React.FC<SlashCommandsManagerProps> = ({
 
                               <button
                                 onClick={() => toggleExpanded(command.id)}
-                                className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                                className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
                               >
                                 {isExpanded ? (
                                   <>

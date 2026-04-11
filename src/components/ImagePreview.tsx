@@ -163,7 +163,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({ images, onRemove, cl
               {displayImages.length > 1 && (
                 <>
                   <button
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
                     onClick={() =>
                       setSelectedImageIndex((prev) =>
                         prev !== null ? (prev - 1 + displayImages.length) % displayImages.length : 0
@@ -173,7 +173,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({ images, onRemove, cl
                     ←
                   </button>
                   <button
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
                     onClick={() =>
                       setSelectedImageIndex((prev) =>
                         prev !== null ? (prev + 1) % displayImages.length : 0

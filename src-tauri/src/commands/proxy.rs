@@ -26,6 +26,29 @@ impl Default for ProxySettings {
 }
 
 /// Get proxy settings from the database
+///
+/// Retrieves the current HTTP/HTTPS proxy configuration stored in the app's SQLite database.
+/// Returns all proxy fields including whether the proxy is currently enabled.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+///
+/// # Returns
+/// `Result<ProxySettings, String>` - The proxy configuration or an error message
+///
+/// # Errors
+/// Returns an error if the database lock cannot be acquired or the query fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_proxy_settings'): Promise<{
+///   http_proxy: string | null;
+///   https_proxy: string | null;
+///   no_proxy: string | null;
+///   all_proxy: string | null;
+///   enabled: boolean;
+/// }>
+/// ```
 #[tauri::command]
 pub async fn get_proxy_settings(db: State<'_, AgentDb>) -> Result<ProxySettings, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -61,7 +84,35 @@ pub async fn get_proxy_settings(db: State<'_, AgentDb>) -> Result<ProxySettings,
     Ok(settings)
 }
 
-/// Save proxy settings to the database
+/// Save proxy settings to the database and apply them as environment variables
+///
+/// Persists proxy configuration to the app_settings table, then immediately applies
+/// the settings as process-level environment variables (HTTP_PROXY, HTTPS_PROXY,
+/// NO_PROXY, ALL_PROXY). When proxy is disabled, all proxy environment variables
+/// are cleared. NO_PROXY always includes localhost and loopback addresses when enabled.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `settings` - Complete proxy configuration to save
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Errors
+/// Returns an error if the database lock cannot be acquired or any setting fails to persist
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('save_proxy_settings', {
+///   settings: {
+///     http_proxy: string | null;
+///     https_proxy: string | null;
+///     no_proxy: string | null;
+///     all_proxy: string | null;
+///     enabled: boolean;
+///   }
+/// }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn save_proxy_settings(
     db: State<'_, AgentDb>,

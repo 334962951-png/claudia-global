@@ -652,6 +652,19 @@ pub fn init_database(app: &AppHandle) -> SqliteResult<Connection> {
 }
 
 /// List all agents
+/// List all saved agents from the database
+///
+/// Returns agents ordered by creation date (newest first). Each agent includes
+/// its full configuration: name, icon, system prompt, default task, model, tool
+/// permissions, hooks, source, and timestamps.
+///
+/// # Returns
+/// `Result<Vec<Agent>, String>` - List of all saved agents
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('list_agents'): Promise<Agent[]>
+/// ```
 #[tauri::command]
 pub async fn list_agents(db: State<'_, AgentDb>) -> Result<Vec<Agent>, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -688,6 +701,40 @@ pub async fn list_agents(db: State<'_, AgentDb>) -> Result<Vec<Agent>, String> {
 }
 
 /// Create a new agent
+/// Create a new agent in the database
+///
+/// Inserts a new agent record with the provided configuration. The `source`
+/// field is set to `"user"` by default.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `name` - Display name for the agent
+/// * `icon` - Emoji or icon identifier
+/// * `system_prompt` - The agent's system prompt / instructions
+/// * `default_task` - Optional default task pre-filled when launching the agent
+/// * `model` - Claude model to use (e.g., `"sonnet-4"`, `"opus-4"`)
+/// * `enable_file_read` - Whether the agent can read files
+/// * `enable_file_write` - Whether the agent can write files
+/// * `enable_network` - Whether the agent has network access
+/// * `hooks` - Optional JSON string of hooks configuration
+///
+/// # Returns
+/// `Result<Agent, String>` - The newly created agent with its assigned ID
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('create_agent', {
+///   name: string,
+///   icon: string,
+///   systemPrompt: string,
+///   defaultTask: string | null,
+///   model: string,
+///   enableFileRead: boolean,
+///   enableFileWrite: boolean,
+///   enableNetwork: boolean,
+///   hooks?: string
+/// }): Promise<Agent>
+/// ```
 #[tauri::command]
 pub async fn create_agent(
     db: State<'_, AgentDb>,
@@ -746,6 +793,42 @@ pub async fn create_agent(
 }
 
 /// Update an existing agent
+/// Update an existing agent's configuration
+///
+/// Modifies the fields of an existing agent identified by its numeric ID.
+/// All fields are updated to the provided values; nulls clear optional fields.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `id` - Numeric database ID of the agent to update
+/// * `name` - Updated display name
+/// * `icon` - Updated icon
+/// * `system_prompt` - Updated system prompt
+/// * `default_task` - Updated default task (or null to clear)
+/// * `model` - Updated model
+/// * `enable_file_read` - Updated file-read permission
+/// * `enable_file_write` - Updated file-write permission
+/// * `enable_network` - Updated network permission
+/// * `hooks` - Updated hooks JSON string (or null to clear)
+///
+/// # Returns
+/// `Result<Agent, String>` - The updated agent record
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('update_agent', {
+///   id: number,
+///   name: string,
+///   icon: string,
+///   systemPrompt: string,
+///   defaultTask: string | null,
+///   model: string,
+///   enableFileRead: boolean,
+///   enableFileWrite: boolean,
+///   enableNetwork: boolean,
+///   hooks?: string | null
+/// }): Promise<Agent>
+/// ```
 #[tauri::command]
 pub async fn update_agent(
     db: State<'_, AgentDb>,
@@ -832,6 +915,21 @@ pub async fn update_agent(
 }
 
 /// Delete an agent
+/// Delete an agent from the database
+///
+/// Permanently removes the agent and all associated agent run records from the database.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `id` - Numeric database ID of the agent to delete
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('delete_agent', { id: number }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn delete_agent(db: State<'_, AgentDb>, id: i64) -> Result<(), String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -843,6 +941,21 @@ pub async fn delete_agent(db: State<'_, AgentDb>, id: i64) -> Result<(), String>
 }
 
 /// Get a single agent by ID
+/// Retrieve a single agent by its database ID
+///
+/// Fetches the full agent record including all configuration fields.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `id` - Numeric database ID of the agent
+///
+/// # Returns
+/// `Result<Agent, String>` - The matching agent record
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_agent', { id: number }): Promise<Agent>
+/// ```
 #[tauri::command]
 pub async fn get_agent(db: State<'_, AgentDb>, id: i64) -> Result<Agent, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -875,6 +988,22 @@ pub async fn get_agent(db: State<'_, AgentDb>, id: i64) -> Result<Agent, String>
 }
 
 /// List agent runs (optionally filtered by agent_id)
+/// List all agent execution runs, optionally filtered by agent
+///
+/// Returns run records from the agent_runs table. When `agent_id` is provided,
+/// only runs for that agent are returned; otherwise all runs are listed.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `agent_id` - Optional agent ID to filter runs by
+///
+/// # Returns
+/// `Result<Vec<AgentRun>, String>` - List of run records ordered by creation date
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('list_agent_runs', { agentId?: number }): Promise<AgentRun[]>
+/// ```
 #[tauri::command]
 pub async fn list_agent_runs(
     db: State<'_, AgentDb>,
@@ -929,6 +1058,19 @@ pub async fn list_agent_runs(
 }
 
 /// Get a single agent run by ID
+/// Retrieve a single agent run record by ID
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `id` - Numeric database ID of the agent run
+///
+/// # Returns
+/// `Result<AgentRun, String>` - The matching run record
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_agent_run', { id: number }): Promise<AgentRun>
+/// ```
 #[tauri::command]
 pub async fn get_agent_run(db: State<'_, AgentDb>, id: i64) -> Result<AgentRun, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -962,6 +1104,23 @@ pub async fn get_agent_run(db: State<'_, AgentDb>, id: i64) -> Result<AgentRun, 
 }
 
 /// Get agent run with real-time metrics from JSONL
+/// Retrieve an agent run enriched with live metrics from JSONL output
+///
+/// Fetches the run record and parses its associated JSONL session file to calculate
+/// duration, total tokens, cost, and message count in real time.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `id` - Numeric database ID of the agent run
+///
+/// # Returns
+/// `Result<AgentRunWithMetrics, String>` - Run record merged with `AgentRunMetrics`
+///   and optional `output` (raw JSONL content)
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_agent_run_with_real_time_metrics', { id: number }): Promise<AgentRunWithMetrics>
+/// ```
 #[tauri::command]
 pub async fn get_agent_run_with_real_time_metrics(
     db: State<'_, AgentDb>,
@@ -972,6 +1131,22 @@ pub async fn get_agent_run_with_real_time_metrics(
 }
 
 /// List agent runs with real-time metrics from JSONL
+/// List agent runs with metrics pre-computed for each
+///
+/// Combines `list_agent_runs` with real-time JSONL metric calculation for each run.
+/// Useful for displaying a run list with cost/duration columns without fetching each individually.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `agent_id` - Optional agent ID to filter runs by
+///
+/// # Returns
+/// `Result<Vec<AgentRunWithMetrics>, String>` - List of runs with embedded metrics
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('list_agent_runs_with_metrics', { agentId?: number }): Promise<AgentRunWithMetrics[]>
+/// ```
 #[tauri::command]
 pub async fn list_agent_runs_with_metrics(
     db: State<'_, AgentDb>,
@@ -989,6 +1164,33 @@ pub async fn list_agent_runs_with_metrics(
 }
 
 /// Execute a CC agent with streaming output
+/// Execute an agent by launching a Claude Code session
+///
+/// Spawns a new Claude Code CLI process configured with the agent's system prompt
+/// and permissions, registers it in the process registry, and emits real-time
+/// output events. The agent run is recorded in the database.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for emitting events and accessing the registry
+/// * `agent_id` - Database ID of the agent to execute
+/// * `project_path` - Working directory for the agent session
+/// * `task` - Task description to send to the agent
+///
+/// # Returns
+/// `Result<AgentRun, String>` - The newly created agent run record
+///
+/// # Errors
+/// Returns an error if the agent is not found, the Claude binary is unavailable,
+/// or the process fails to start
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('execute_agent', {
+///   agentId: number,
+///   projectPath: string,
+///   task: string
+/// }): Promise<AgentRun>
+/// ```
 #[tauri::command]
 pub async fn execute_agent(
     app: AppHandle,
@@ -1641,6 +1843,22 @@ async fn spawn_agent_system(
 }
 
 /// List all currently running agent sessions
+/// List all currently running agent sessions
+///
+/// Combines database run records with the process registry to return only those
+/// agent runs whose processes are still active.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `registry` - Process registry state
+///
+/// # Returns
+/// `Result<Vec<AgentRun>, String>` - List of active agent runs
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('list_running_sessions'): Promise<AgentRun[]>
+/// ```
 #[tauri::command]
 pub async fn list_running_sessions(
     db: State<'_, AgentDb>,
@@ -1707,6 +1925,24 @@ pub async fn list_running_sessions(
 }
 
 /// Kill a running agent session
+/// Kill a running agent session
+///
+/// Terminates the Claude Code process for the given run, updates its status to
+/// `"cancelled"`, and records the completion timestamp.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for accessing the registry
+/// * `db` - Database state for updating the run record
+/// * `registry` - Process registry state
+/// * `run_id` - Database ID of the agent run to kill
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('kill_agent_session', { runId: number }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn kill_agent_session(
     app: AppHandle,
@@ -1765,6 +2001,22 @@ pub async fn kill_agent_session(
 }
 
 /// Get the status of a specific agent session
+/// Get the current status of an agent run
+///
+/// Queries the database for the run's status field.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `run_id` - Database ID of the agent run
+///
+/// # Returns
+/// `Result<Option<String>, String>` - Status string (`"pending"`, `"running"`,
+///   `"completed"`, `"failed"`, `"cancelled"`) or `None` if not found
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_session_status', { runId: number }): Promise<string | null>
+/// ```
 #[tauri::command]
 pub async fn get_session_status(
     db: State<'_, AgentDb>,
@@ -1784,6 +2036,22 @@ pub async fn get_session_status(
 }
 
 /// Cleanup finished processes and update their status
+/// Clean up database records for processes that have ended
+///
+/// Scans for runs with status `"running"` whose processes are no longer active
+/// in the registry, and updates their status to `"completed"` or `"failed"`
+/// based on the process exit code.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+///
+/// # Returns
+/// `Result<Vec<i64>, String>` - List of run IDs that were updated
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('cleanup_finished_processes'): Promise<number[]>
+/// ```
 #[tauri::command]
 pub async fn cleanup_finished_processes(db: State<'_, AgentDb>) -> Result<Vec<i64>, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -1859,6 +2127,22 @@ pub async fn cleanup_finished_processes(db: State<'_, AgentDb>) -> Result<Vec<i6
 }
 
 /// Get live output from a running process
+/// Get real-time output buffer from a running session
+///
+/// Reads the accumulated stdout/stderr from the process registry's live output buffer
+/// for the given run.
+///
+/// # Arguments
+/// * `registry` - Process registry state
+/// * `run_id` - Database ID of the agent run
+///
+/// # Returns
+/// `Result<String, String>` - Current accumulated output string
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_live_session_output', { runId: number }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn get_live_session_output(
     registry: State<'_, crate::process::ProcessRegistryState>,
@@ -1868,6 +2152,23 @@ pub async fn get_live_session_output(
 }
 
 /// Get real-time output for a running session by reading its JSONL file with live output fallback
+/// Get historical output from a completed session's JSONL file
+///
+/// Reads and returns the full JSONL content for a completed agent run, loading
+/// from the session file in `~/.claude/`.
+///
+/// # Arguments
+/// * `db` - Database state for looking up session path info
+/// * `registry` - Process registry state
+/// * `run_id` - Database ID of the agent run
+///
+/// # Returns
+/// `Result<String, String>` - Raw JSONL content of the session
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_session_output', { runId: number }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn get_session_output(
     db: State<'_, AgentDb>,
@@ -1951,6 +2252,23 @@ pub async fn get_session_output(
 }
 
 /// Stream real-time session output by watching the JSONL file
+/// Stream session output events to the frontend via Tauri
+///
+/// Opens the agent run's JSONL file and emits each line as a `session-output`
+/// Tauri event. Used for real-time output display in the UI.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for emitting events
+/// * `db` - Database state
+/// * `run_id` - Database ID of the agent run to stream
+///
+/// # Returns
+/// `Result<(), String>` - Success when streaming starts or ends
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('stream_session_output', { runId: number }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn stream_session_output(
     app: AppHandle,
@@ -2039,6 +2357,22 @@ pub async fn stream_session_output(
 }
 
 /// Export a single agent to JSON format
+/// Export an agent as a JSON string for sharing
+///
+/// Serializes the agent's configuration (without database IDs) into a portable
+/// JSON string suitable for sharing or backup.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `id` - Numeric database ID of the agent to export
+///
+/// # Returns
+/// `Result<String, String>` - JSON string representation of the agent export
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('export_agent', { id: number }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn export_agent(db: State<'_, AgentDb>, id: i64) -> Result<String, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -2074,6 +2408,22 @@ pub async fn export_agent(db: State<'_, AgentDb>, id: i64) -> Result<String, Str
 }
 
 /// Export agent to file with native dialog
+/// Export an agent to a `.json` file on disk
+///
+/// Writes the agent export (same format as `export_agent`) to the specified file path.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `id` - Numeric database ID of the agent to export
+/// * `file_path` - Destination file path for the export
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('export_agent_to_file', { id: number, filePath: string }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn export_agent_to_file(
     db: State<'_, AgentDb>,
@@ -2090,6 +2440,20 @@ pub async fn export_agent_to_file(
 }
 
 /// Get the stored Claude binary path from settings
+/// Get the configured Claude binary path from settings
+///
+/// Reads the `claude_binary_path` key from the app_settings table.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+///
+/// # Returns
+/// `Result<Option<String>, String>` - Configured path or `None` if not set
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_claude_binary_path'): Promise<string | null>
+/// ```
 #[tauri::command]
 pub async fn get_claude_binary_path(db: State<'_, AgentDb>) -> Result<Option<String>, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -2106,6 +2470,22 @@ pub async fn get_claude_binary_path(db: State<'_, AgentDb>) -> Result<Option<Str
 }
 
 /// Set the Claude binary path in settings
+/// Persist the Claude binary path to app settings
+///
+/// Stores the binary path in the database. Special value `"claude-code"` is
+/// used to indicate the bundled macOS sidecar.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `path` - Binary path or `"claude-code"` for the bundled sidecar
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('set_claude_binary_path', { path: string }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn set_claude_binary_path(db: State<'_, AgentDb>, path: String) -> Result<(), String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -2156,6 +2536,21 @@ pub async fn set_claude_binary_path(db: State<'_, AgentDb>, path: String) -> Res
 }
 
 /// Refresh the Claude binary path cache to use the newly saved path immediately
+/// Re-discover the Claude binary and update the database
+///
+/// Clears internal caches and re-runs the binary discovery logic, updating
+/// the `claude_binary_path` setting with the first valid installation found.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for discovering the binary
+///
+/// # Returns
+/// `Result<String, String>` - The newly discovered binary path
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('refresh_claude_binary_path'): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn refresh_claude_binary_path(app: AppHandle) -> Result<String, String> {
     info!("🔄 Refreshing Claude binary path...");
@@ -2168,6 +2563,21 @@ pub async fn refresh_claude_binary_path(app: AppHandle) -> Result<String, String
 }
 
 /// List all available Claude installations on the system
+/// Discover all Claude Code installations on the system
+///
+/// Scans standard installation locations (Homebrew, PATH, sidecar) and returns
+/// metadata for each found installation including path, version, and source.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle
+///
+/// # Returns
+/// `Result<Vec<ClaudeInstallation>, String>` - List of discovered installations
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('list_claude_installations'): Promise<ClaudeInstallation[]>
+/// ```
 #[tauri::command]
 pub async fn list_claude_installations(
     app: AppHandle,
@@ -2323,6 +2733,25 @@ fn create_command_with_env(program: &str) -> Command {
 }
 
 /// Import an agent from JSON data
+/// Import an agent from a JSON string
+///
+/// Parses an agent export JSON string (as produced by `export_agent`) and
+/// inserts it as a new record in the database with `source` set to `"imported"`.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `json_data` - Agent export JSON string
+///
+/// # Returns
+/// `Result<Agent, String>` - The newly created agent record
+///
+/// # Errors
+/// Returns an error if the JSON is malformed or the version is unsupported
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('import_agent', { jsonData: string }): Promise<Agent>
+/// ```
 #[tauri::command]
 pub async fn import_agent(db: State<'_, AgentDb>, json_data: String) -> Result<Agent, String> {
     // Parse the JSON data
@@ -2481,6 +2910,22 @@ pub async fn import_agent_with_source(db: State<'_, AgentDb>, json_data: String,
 }
 
 /// Import agent from file
+/// Import an agent from a `.json` file on disk
+///
+/// Reads an agent export file and inserts its contents as a new database record.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `file_path` - Path to the agent export `.json` file
+/// * `source` - Optional override for the source field (e.g., `"file"`, `"claudia"`)
+///
+/// # Returns
+/// `Result<Agent, String>` - The newly created agent record
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('import_agent_from_file', { filePath: string, source?: string }): Promise<Agent>
+/// ```
 #[tauri::command]
 pub async fn import_agent_from_file(
     db: State<'_, AgentDb>,
@@ -2520,6 +2965,21 @@ struct GitHubApiResponse {
 }
 
 /// Fetch list of agents from GitHub repository
+/// Fetch available agent templates from the Claudia GitHub repository
+///
+/// Makes a GET request to the Claudia GitHub repo to list available agent definition
+/// files in the `cc_agents/` directory. Returns metadata for each available template.
+///
+/// # Returns
+/// `Result<Vec<GitHubAgentFile>, String>` - List of available agent files with name and download URL
+///
+/// # Errors
+/// Returns an error if the GitHub API request fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('fetch_github_agents'): Promise<GitHubAgentFile[]>
+/// ```
 #[tauri::command]
 pub async fn fetch_github_agents() -> Result<Vec<GitHubAgentFile>, String> {
     info!("Fetching agents from GitHub repository...");
@@ -2566,6 +3026,24 @@ pub async fn fetch_github_agents() -> Result<Vec<GitHubAgentFile>, String> {
 }
 
 /// Fetch and preview a specific agent from GitHub
+/// Download and parse an agent template from GitHub
+///
+/// Fetches the raw content of an agent file from its GitHub download URL and
+/// parses it into an `AgentExport` object.
+///
+/// # Arguments
+/// * `download_url` - Raw file URL from the GitHub API
+///
+/// # Returns
+/// `Result<AgentExport, String>` - Parsed agent export ready for import
+///
+/// # Errors
+/// Returns an error if the download fails or the content is not valid JSON
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('fetch_github_agent_content', { downloadUrl: string }): Promise<AgentExport>
+/// ```
 #[tauri::command]
 pub async fn fetch_github_agent_content(download_url: String) -> Result<AgentExport, String> {
     info!("Fetching agent content from: {}", download_url);
@@ -2607,6 +3085,22 @@ pub async fn fetch_github_agent_content(download_url: String) -> Result<AgentExp
 }
 
 /// Import an agent directly from GitHub
+/// Download and import an agent from GitHub
+///
+/// Fetches the agent definition from GitHub and inserts it as a new database
+/// record with `source` set to `"github"`.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `download_url` - Raw file URL for the agent export JSON
+///
+/// # Returns
+/// `Result<Agent, String>` - The newly created agent record
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('import_agent_from_github', { downloadUrl: string }): Promise<Agent>
+/// ```
 #[tauri::command]
 pub async fn import_agent_from_github(
     db: State<'_, AgentDb>,
@@ -2627,6 +3121,24 @@ pub async fn import_agent_from_github(
 
 /// Load agent session history from JSONL file
 /// Similar to Claude Code's load_session_history, but searches across all project directories
+/// Load session history for a specific Claude session
+///
+/// Reads the JSONL file associated with an agent run's session and returns all
+/// message entries as parsed JSON values.
+///
+/// # Arguments
+/// * `session_id` - The session UUID (from the agent run record)
+///
+/// # Returns
+/// `Result<Vec<serde_json::Value>, String>` - List of message entries from the JSONL file
+///
+/// # Errors
+/// Returns an error if the session file cannot be found or parsed
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('load_agent_session_history', { sessionId: string }): Promise<any[]>
+/// ```
 #[tauri::command]
 pub async fn load_agent_session_history(
     session_id: String,
@@ -2750,6 +3262,19 @@ fn parse_agent_markdown(content: &str, file_name: &str) -> Result<(String, Strin
 }
 
 /// List native agents directly from .claude/agents directory (without importing to DB)
+/// List agent definitions from `~/.claude/agents/` directory
+///
+/// Reads native agent definition files from the user's Claude configuration
+/// directory and parses them into `Agent` objects. Native agents are not stored
+/// in the database — they are loaded on demand from the filesystem.
+///
+/// # Returns
+/// `Result<Vec<Agent>, String>` - List of native agents with `source` set to `"native"`
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('list_native_agents'): Promise<Agent[]>
+/// ```
 #[tauri::command]
 pub async fn list_native_agents() -> Result<Vec<Agent>, String> {
     info!("Listing native agents from .claude/agents");
@@ -2819,6 +3344,22 @@ pub async fn list_native_agents() -> Result<Vec<Agent>, String> {
 }
 
 /// Import native agents from .claude/agents directory
+/// Import all native agents into the database
+///
+/// Scans `~/.claude/agents/`, reads each agent definition, and inserts them
+/// into the database as `"claudia"` sourced agents. Skips agents that already
+/// exist by matching name.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+///
+/// # Returns
+/// `Result<u32, String>` - Count of agents successfully imported
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('import_native_agents'): Promise<number>
+/// ```
 #[tauri::command]
 pub async fn import_native_agents(db: State<'_, AgentDb>) -> Result<u32, String> {
     info!("Importing native agents from .claude/agents");
@@ -2907,6 +3448,21 @@ pub async fn import_native_agents(db: State<'_, AgentDb>) -> Result<u32, String>
 }
 
 /// Delete all native agents from database (keeping .claude/agents files intact)
+/// Remove all agents with source `"native"` from the database
+///
+/// Deletes any database records whose source field is `"native"`. This does not
+/// delete the filesystem definitions in `~/.claude/agents/`.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+///
+/// # Returns
+/// `Result<u32, String>` - Count of deleted records
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('delete_native_agents'): Promise<number>
+/// ```
 #[tauri::command]
 pub async fn delete_native_agents(db: State<'_, AgentDb>) -> Result<u32, String> {
     info!("Deleting native agents from database");
@@ -2950,6 +3506,21 @@ pub async fn delete_native_agents(db: State<'_, AgentDb>) -> Result<u32, String>
 // Environment Variables Management Commands
 
 /// Get all environment variables from database
+/// Get all environment variables from the database
+///
+/// Returns the full list of stored environment variables with their group
+/// assignments and sort order.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+///
+/// # Returns
+/// `Result<Vec<EnvironmentVariable>, String>` - List of all environment variables
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_environment_variables'): Promise<EnvironmentVariable[]>
+/// ```
 #[tauri::command]
 pub async fn get_environment_variables(db: State<'_, AgentDb>) -> Result<Vec<EnvironmentVariable>, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -3146,6 +3717,22 @@ fn save_environment_variables_internal(
 }
 
 /// Save environment variables to database (replacing all existing ones)
+/// Save or update a batch of environment variables
+///
+/// Performs an upsert (INSERT OR REPLACE) for each provided environment variable.
+/// Variables with existing IDs are updated; new ones are inserted.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `env_vars` - List of environment variable records to save
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('save_environment_variables', { envVars: EnvironmentVariable[] }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn save_environment_variables(
     db: State<'_, AgentDb>,
@@ -3156,6 +3743,21 @@ pub async fn save_environment_variables(
 }
 
 /// Get enabled environment variables as a HashMap for use in processes
+/// Get all enabled environment variables as a key-value map
+///
+/// Returns only variables where `enabled` is true, flattened into a plain
+/// `HashMap<String, String>` suitable for passing to a subprocess.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+///
+/// # Returns
+/// `Result<HashMap<String, String>, String>` - Map of key-value pairs for enabled variables
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_enabled_environment_variables'): Promise<Record<string, string>>
+/// ```
 #[tauri::command]
 pub async fn get_enabled_environment_variables(db: State<'_, AgentDb>) -> Result<std::collections::HashMap<String, String>, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -3244,6 +3846,20 @@ pub async fn get_enabled_environment_variables(db: State<'_, AgentDb>) -> Result
 }
 
 /// Get all environment variable groups
+/// List all environment variable groups
+///
+/// Returns all groups ordered by sort_order, then name.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+///
+/// # Returns
+/// `Result<Vec<EnvironmentVariableGroup>, String>` - List of environment variable groups
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_environment_variable_groups'): Promise<EnvironmentVariableGroup[]>
+/// ```
 #[tauri::command]
 pub async fn get_environment_variable_groups(db: State<'_, AgentDb>) -> Result<Vec<EnvironmentVariableGroup>, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -3273,6 +3889,28 @@ pub async fn get_environment_variable_groups(db: State<'_, AgentDb>) -> Result<V
 }
 
 /// Create a new environment variable group
+/// Create a new environment variable group
+///
+/// Inserts a new group with the given name. System groups cannot be created via
+/// this API.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `name` - Display name for the group
+/// * `description` - Optional description
+/// * `sort_order` - Optional sort order (defaults to 0)
+///
+/// # Returns
+/// `Result<EnvironmentVariableGroup, String>` - The newly created group with its assigned ID
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('create_environment_variable_group', {
+///   name: string,
+///   description?: string,
+///   sortOrder?: number
+/// }): Promise<EnvironmentVariableGroup>
+/// ```
 #[tauri::command]
 pub async fn create_environment_variable_group(
     db: State<'_, AgentDb>,
@@ -3314,6 +3952,31 @@ pub async fn create_environment_variable_group(
 }
 
 /// Update an environment variable group
+/// Update an existing environment variable group
+///
+/// Modifies the name, description, enabled status, or sort order of a group.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `id` - Database ID of the group to update
+/// * `name` - Updated display name
+/// * `description` - Updated description (or null to clear)
+/// * `enabled` - Updated enabled flag
+/// * `sort_order` - Updated sort order
+///
+/// # Returns
+/// `Result<EnvironmentVariableGroup, String>` - The updated group record
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('update_environment_variable_group', {
+///   id: number,
+///   name: string,
+///   description?: string | null,
+///   enabled: boolean,
+///   sortOrder: number
+/// }): Promise<EnvironmentVariableGroup>
+/// ```
 #[tauri::command]
 pub async fn update_environment_variable_group(
     db: State<'_, AgentDb>,
@@ -3355,6 +4018,22 @@ pub async fn update_environment_variable_group(
 }
 
 /// Delete an environment variable group (only if it's not a system group and has no variables)
+/// Delete an environment variable group and its members
+///
+/// Removes the group and cascades deletion to all environment variables assigned
+/// to it. System groups cannot be deleted.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `id` - Database ID of the group to delete
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('delete_environment_variable_group', { id: number }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn delete_environment_variable_group(db: State<'_, AgentDb>, id: i64) -> Result<(), String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;

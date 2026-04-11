@@ -37,6 +37,28 @@
   --color-green-500: oklch(0.72 0.2 142);
   --color-green-600: oklch(0.64 0.22 142);
 
+  /* Brand accent color */
+  --color-accent-brand: oklch(0.65 0.15 40);
+  --color-accent-brand-light: oklch(0.75 0.13 45);
+
+  /* Syntax highlighting token colors */
+  --color-token-comment: oklch(0.55 0.02 240);
+  --color-token-punctuation: oklch(0.70 0.02 240);
+  --color-token-property: oklch(0.75 0.17 75);
+  --color-token-tag: oklch(0.60 0.18 295);
+  --color-token-string: oklch(0.70 0.18 165);
+  --color-token-function: oklch(0.65 0.14 275);
+  --color-token-keyword: oklch(0.70 0.16 300);
+  --color-token-variable: oklch(0.65 0.15 290);
+  --color-token-operator: oklch(0.70 0.02 240);
+  --color-token-deleted: oklch(0.63 0.22 25);
+  --color-token-regex: oklch(0.70 0.14 200);
+  --color-token-inline-code-bg: oklch(0.50 0.12 295 / 0.1);
+
+  /* Scrollbar */
+  --color-scrollbar-thumb: oklch(0.70 0.02 240 / 0.5);
+  --color-scrollbar-thumb-hover: oklch(0.70 0.02 240 / 0.6);
+
   /* Border radius */
   --radius-sm: 0.25rem;
   --radius-base: 0.375rem;
@@ -95,6 +117,28 @@
   /* Additional colors for status messages */
   --color-green-500: oklch(0.62 0.20 142);
   --color-green-600: oklch(0.54 0.22 142);
+
+  /* Brand accent color */
+  --color-accent-brand: oklch(0.60 0.14 40);
+  --color-accent-brand-light: oklch(0.70 0.12 45);
+
+  /* Syntax highlighting token colors */
+  --color-token-comment: oklch(0.50 0.02 240);
+  --color-token-punctuation: oklch(0.65 0.02 240);
+  --color-token-property: oklch(0.65 0.17 55);
+  --color-token-tag: oklch(0.55 0.18 300);
+  --color-token-string: oklch(0.60 0.18 165);
+  --color-token-function: oklch(0.55 0.14 270);
+  --color-token-keyword: oklch(0.60 0.16 300);
+  --color-token-variable: oklch(0.55 0.15 290);
+  --color-token-operator: oklch(0.65 0.02 240);
+  --color-token-deleted: oklch(0.60 0.22 25);
+  --color-token-regex: oklch(0.65 0.14 200);
+  --color-token-inline-code-bg: oklch(0.50 0.12 295 / 0.1);
+
+  /* Scrollbar */
+  --color-scrollbar-thumb: oklch(0.55 0.02 240 / 0.4);
+  --color-scrollbar-thumb-hover: oklch(0.55 0.02 240 / 0.5);
 }
 
 /* Gray Theme */
@@ -122,6 +166,28 @@
   /* Additional colors for status messages */
   --color-green-500: oklch(0.72 0.20 142);
   --color-green-600: oklch(0.64 0.22 142);
+
+  /* Brand accent color */
+  --color-accent-brand: oklch(0.65 0.15 40);
+  --color-accent-brand-light: oklch(0.75 0.13 45);
+
+  /* Syntax highlighting token colors */
+  --color-token-comment: oklch(0.58 0.02 240);
+  --color-token-punctuation: oklch(0.72 0.02 240);
+  --color-token-property: oklch(0.78 0.17 75);
+  --color-token-tag: oklch(0.62 0.18 295);
+  --color-token-string: oklch(0.72 0.18 165);
+  --color-token-function: oklch(0.67 0.14 275);
+  --color-token-keyword: oklch(0.72 0.16 300);
+  --color-token-variable: oklch(0.67 0.15 290);
+  --color-token-operator: oklch(0.72 0.02 240);
+  --color-token-deleted: oklch(0.63 0.22 25);
+  --color-token-regex: oklch(0.72 0.14 200);
+  --color-token-inline-code-bg: oklch(0.50 0.12 295 / 0.1);
+
+  /* Scrollbar */
+  --color-scrollbar-thumb: oklch(0.70 0.02 240 / 0.5);
+  --color-scrollbar-thumb-hover: oklch(0.70 0.02 240 / 0.6);
 }
 
 /* White Theme (High Contrast Light) */
@@ -149,6 +215,28 @@
   /* Additional colors for status messages */
   --color-green-500: oklch(0.55 0.25 142);
   --color-green-600: oklch(0.47 0.27 142);
+
+  /* Brand accent color */
+  --color-accent-brand: oklch(0.55 0.16 40);
+  --color-accent-brand-light: oklch(0.65 0.14 45);
+
+  /* Syntax highlighting token colors */
+  --color-token-comment: oklch(0.48 0.02 240);
+  --color-token-punctuation: oklch(0.35 0.02 240);
+  --color-token-property: oklch(0.60 0.20 25);
+  --color-token-tag: oklch(0.45 0.20 300);
+  --color-token-string: oklch(0.50 0.20 165);
+  --color-token-function: oklch(0.45 0.18 270);
+  --color-token-keyword: oklch(0.42 0.20 300);
+  --color-token-variable: oklch(0.40 0.18 290);
+  --color-token-operator: oklch(0.35 0.02 240);
+  --color-token-deleted: oklch(0.58 0.24 25);
+  --color-token-regex: oklch(0.55 0.16 200);
+  --color-token-inline-code-bg: oklch(0.35 0.12 295 / 0.1);
+
+  /* Scrollbar */
+  --color-scrollbar-thumb: oklch(0.50 0.02 240 / 0.4);
+  --color-scrollbar-thumb-hover: oklch(0.50 0.02 240 / 0.5);
 }
 
 /* Custom Theme - CSS variables will be set dynamically by ThemeContext */
@@ -616,7 +704,7 @@ button:focus-visible,
 }
 
 .prose.dark\:prose-invert pre {
-  background-color: rgb(13, 17, 23);
+  background-color: var(--color-card);
   border: 1px solid var(--color-border);
 }
 
@@ -713,7 +801,7 @@ button:focus-visible,
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.05), transparent);
   transition: left 0.5s;
 }
 
@@ -753,14 +841,14 @@ button:focus-visible,
     from var(--angle),
     transparent 0%,
     transparent 85%,
-    #d97757 90%,
-    #ff9a7a 92.5%,
-    #d97757 95%,
+    var(--color-accent-brand) 90%,
+    var(--color-accent-brand-light) 92.5%,
+    var(--color-accent-brand) 95%,
     transparent 100%
   );
   -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
+    linear-gradient(var(--color-foreground) 0 0) content-box,
+    linear-gradient(var(--color-foreground) 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
@@ -784,7 +872,7 @@ button:focus-visible,
 /* Firefox - thin and minimal */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+  scrollbar-color: var(--color-scrollbar-thumb) transparent;
 }
 
 /* Global webkit scrollbar - ultra thin and elegant */
@@ -798,13 +886,13 @@ button:focus-visible,
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.5);
+  background-color: var(--color-scrollbar-thumb);
   border-radius: 2px;
   transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(156, 163, 175, 0.6);
+  background-color: var(--color-scrollbar-thumb-hover);
 }
 
 ::-webkit-scrollbar-corner {
@@ -822,14 +910,14 @@ code::-webkit-scrollbar {
 pre::-webkit-scrollbar-thumb,
 .w-md-editor-content::-webkit-scrollbar-thumb,
 code::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.4);
+  background-color: var(--color-scrollbar-thumb);
   border-radius: 4px;
 }
 
 pre::-webkit-scrollbar-thumb:hover,
 .w-md-editor-content::-webkit-scrollbar-thumb:hover,
 code::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(156, 163, 175, 0.6);
+  background-color: var(--color-scrollbar-thumb-hover);
 }
 
 /* NFO Credits Scanlines Animation */

@@ -93,16 +93,10 @@ const WebviewPreviewComponent: React.FC<WebviewPreviewProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  // TODO: These will be implemented with actual webview navigation
-  // const [canGoBack, setCanGoBack] = useState(false);
-  // const [canGoForward, setCanGoForward] = useState(false);
 
-  // TODO: These will be used for actual Tauri webview implementation
-  // const webviewRef = useRef<WebviewWindow | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  // const previewId = useRef(`preview-${Date.now()}`);
 
   // Handle ESC key to exit full screen
   useEffect(() => {

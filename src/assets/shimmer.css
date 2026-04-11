@@ -88,7 +88,7 @@
     105deg,
     currentColor 0%,
     currentColor 40%,
-    #d97757 50%,
+    var(--color-accent-brand) 50%,
     currentColor 60%,
     currentColor 100%
   );
@@ -102,7 +102,7 @@
 
 .rotating-symbol {
   display: inline-block;
-  color: #d97757;
+  color: var(--color-accent-brand);
   font-size: 1.5rem; /* Make it bigger! */
   margin-right: 0.5rem;
   font-weight: bold;
@@ -137,7 +137,7 @@
     105deg,
     transparent 0%,
     transparent 40%,
-    rgba(217, 119, 87, 0.4) 50%,
+    oklch(0.65 0.15 40 / 0.4) 50%,
     transparent 60%,
     transparent 100%
   );

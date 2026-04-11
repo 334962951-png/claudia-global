@@ -78,7 +78,7 @@ export const ClaudeMemoriesDropdown: React.FC<ClaudeMemoriesDropdownProps> = ({
         {/* Dropdown Header */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between p-3 hover:bg-accent/50 transition-colors"
+          className="w-full flex items-center justify-between p-3 hover:bg-accent/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <div className="flex items-center space-x-2">
             <FileText className="h-4 w-4 text-muted-foreground" />

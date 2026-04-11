@@ -246,7 +246,31 @@ fn create_default_commands() -> Vec<SlashCommand> {
     ]
 }
 
-/// Discover all custom slash commands
+/// Discover all available slash commands from all scopes
+///
+/// Scans the filesystem for custom slash command markdown files across project, user,
+/// and default scopes. Project commands are read from `.claude/commands/` under the
+/// given project path; user commands from `~/.claude/commands/`. Built-in default
+/// commands are always included. Each command is parsed for YAML frontmatter
+/// (description, allowed-tools) and content indicators (bash `!`, file refs `@`,
+/// $ARGUMENTS placeholder).
+///
+/// # Arguments
+/// * `project_path` - Optional path to a project; if provided, project-scope commands
+///   in `.claude/commands/` beneath this path will be discovered
+///
+/// # Returns
+/// `Result<Vec<SlashCommand>, String>` - List of discovered slash commands, each with
+///   id, name, full_command, scope, namespace, file_path, content, description,
+///   allowed_tools, has_bash_commands, has_file_references, and accepts_arguments
+///
+/// # Errors
+/// Returns an error if filesystem operations fail
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('slash_commands_list', { projectPath?: string }): Promise<SlashCommand[]>
+/// ```
 #[tauri::command]
 pub async fn slash_commands_list(
     project_path: Option<String>,
@@ -311,7 +335,24 @@ pub async fn slash_commands_list(
     Ok(commands)
 }
 
-/// Get a single slash command by ID
+/// Retrieve a single slash command by its unique identifier
+///
+/// Looks up a command by ID from the combined set of default, project, and user
+/// commands. Internally calls `slash_commands_list` and filters by ID.
+///
+/// # Arguments
+/// * `command_id` - Unique identifier string (format: `"{scope}-{file_path_hash}"`)
+///
+/// # Returns
+/// `Result<SlashCommand, String>` - The matching slash command
+///
+/// # Errors
+/// Returns an error if the command ID format is invalid or no matching command is found
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('slash_command_get', { commandId: string }): Promise<SlashCommand>
+/// ```
 #[tauri::command]
 pub async fn slash_command_get(command_id: String) -> Result<SlashCommand, String> {
     debug!("Getting slash command: {}", command_id);
@@ -332,7 +373,42 @@ pub async fn slash_command_get(command_id: String) -> Result<SlashCommand, Strin
         .ok_or_else(|| format!("Command not found: {}", command_id))
 }
 
-/// Create or update a slash command
+/// Create or update a custom slash command as a markdown file
+///
+/// Writes a markdown file with optional YAML frontmatter (description, allowed-tools)
+/// to the appropriate directory based on scope. For project scope, the file is written
+/// to `.claude/commands/` under the project path; for user scope, to `~/.claude/commands/`.
+/// Namespace components are mapped to subdirectories (e.g. namespace `"frontend:component"`
+/// creates `frontend/component/{name}.md`).
+///
+/// # Arguments
+/// * `scope` - Command scope: `"project"` or `"user"`
+/// * `name` - Command name (becomes the filename without `.md`)
+/// * `namespace` - Optional colon-separated namespace (e.g. `"frontend:component"`)
+/// * `content` - Markdown body of the command
+/// * `description` - Optional description stored in YAML frontmatter
+/// * `allowed_tools` - List of allowed tool names for the command (YAML frontmatter)
+/// * `project_path` - Required when scope is `"project"`; the project root path
+///
+/// # Returns
+/// `Result<SlashCommand, String>` - The saved command as a parsed SlashCommand struct
+///
+/// # Errors
+/// Returns an error if name is empty, scope is invalid, project_path is missing for
+/// project scope, or any filesystem operation fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('slash_command_save', {
+///   scope: 'project' | 'user',
+///   name: string,
+///   namespace?: string,
+///   content: string,
+///   description?: string,
+///   allowedTools: string[],
+///   projectPath?: string
+/// }): Promise<SlashCommand>
+/// ```
 #[tauri::command]
 pub async fn slash_command_save(
     scope: String,
@@ -415,7 +491,30 @@ pub async fn slash_command_save(
         .map_err(|e| format!("Failed to load saved command: {}", e))
 }
 
-/// Delete a slash command
+/// Delete a custom slash command by its unique identifier
+///
+/// Finds the command by ID, deletes its markdown file from disk, and cleans up
+/// any empty parent directories left behind. Project-scoped commands require
+/// the project_path parameter.
+///
+/// # Arguments
+/// * `command_id` - Unique identifier of the command to delete
+/// * `project_path` - Required for project-scoped commands; the project root path
+///
+/// # Returns
+/// `Result<String, String>` - Success message with the deleted command's full name
+///
+/// # Errors
+/// Returns an error if project_path is missing for a project command, the command
+/// is not found, or the file deletion fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('slash_command_delete', {
+///   commandId: string,
+///   projectPath?: string
+/// }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn slash_command_delete(command_id: String, project_path: Option<String>) -> Result<String, String> {
     info!("Deleting slash command: {}", command_id);

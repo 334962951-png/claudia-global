@@ -54,11 +54,11 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
     const getVariantStyles = () => {
       if (variant === "high-contrast") {
         return {
-          backgroundColor: checked ? "#000000" : "#ffffff",
-          border: checked ? "2px solid #ffffff" : "2px solid #666666",
+          backgroundColor: checked ? "var(--color-foreground)" : "var(--color-background)",
+          border: checked ? "2px solid var(--color-foreground)" : "2px solid var(--color-muted-foreground)",
         };
       }
-      
+
       // Default variant uses CSS variables
       return {
         backgroundColor: checked ? "var(--color-primary)" : "var(--color-muted)",
@@ -69,7 +69,7 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
     const getThumbStyles = () => {
       if (variant === "high-contrast") {
         return {
-          backgroundColor: checked ? "#ffffff" : "#000000",
+          backgroundColor: checked ? "var(--color-background)" : "var(--color-foreground)",
         };
       }
       
@@ -88,6 +88,7 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
         onClick={() => onCheckedChange?.(!checked)}
         className={cn(
           "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full shadow-sm transition-colors",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}

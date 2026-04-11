@@ -7,10 +7,9 @@
  *
  * @example
  * ```tsx
- * import { Button, Dialog, AgentExecutionDemo } from '@/components';
+ * import { Button, Dialog } from '@/components';
  * ```
  */
-export * from "./AgentExecutionDemo";
 export * from "./AgentRunOutputViewer";
 export * from "./StreamMessage";
 export * from "./ToolWidgets";

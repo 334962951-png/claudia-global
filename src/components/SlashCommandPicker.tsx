@@ -385,6 +385,7 @@ export const SlashCommandPicker: React.FC<SlashCommandPickerProps> = ({
                             className={cn(
                               "w-full flex items-start gap-3 px-3 py-2 rounded-md",
                               "hover:bg-accent transition-colors",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                               "text-left",
                               isSelected && "bg-accent"
                             )}

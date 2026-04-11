@@ -805,6 +805,7 @@ export const AgentExecution: React.FC<AgentExecutionProps> = ({ agent, onBack, c
                         className={cn(
                           "w-full px-3 py-2 text-left rounded-md transition-colors",
                           "hover:bg-accent hover:text-accent-foreground",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           model === modelOption.id && "bg-accent text-accent-foreground",
                           isRunning && "opacity-50 cursor-not-allowed"
                         )}

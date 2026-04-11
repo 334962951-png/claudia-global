@@ -495,6 +495,7 @@ export const FilePicker: React.FC<FilePickerProps> = ({
                   className={cn(
                     "w-full flex items-center gap-2 px-2 py-1.5 rounded-md",
                     "hover:bg-accent transition-colors",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     "text-left text-sm",
                     isSelected && "bg-accent"
                   )}

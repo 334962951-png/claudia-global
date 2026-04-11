@@ -224,7 +224,7 @@ export const AnalyticsConsentBanner: React.FC<AnalyticsConsentBannerProps> = ({
               </div>
               <button
                 onClick={() => setVisible(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
               >
                 <X className="h-4 w-4" />
               </button>

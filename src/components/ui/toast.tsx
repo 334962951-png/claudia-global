@@ -92,7 +92,7 @@ export const Toast: React.FC<ToastProps> = ({
       {onDismiss && (
         <button
           onClick={onDismiss}
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
         >
           <X className="h-4 w-4" />
         </button>

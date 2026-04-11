@@ -206,7 +206,7 @@ export const NFOCredits: React.FC<NFOCreditsProps> = ({ onClose }) => {
               {/* Asterisk Logo Section (Fixed at top) */}
               <div className="absolute top-0 left-0 right-0 bg-background z-10 pb-4 text-center">
                 <button
-                  className="inline-block mt-4 hover:scale-110 transition-transform cursor-pointer"
+                  className="inline-block mt-4 hover:scale-110 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
                   onClick={async (e) => {
                     e.stopPropagation();
                     await openUrl("https://asterisk.so");

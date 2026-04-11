@@ -171,7 +171,6 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
   // Analytics tracking
   const trackEvent = useTrackEvent();
   useComponentMetrics('ClaudeCodeSession');
-  // const aiTracking = useAIInteractionTracking('sonnet'); // Default model
   const workflowTracking = useWorkflowTracking('claude_session');
 
   // Keep ref in sync with state

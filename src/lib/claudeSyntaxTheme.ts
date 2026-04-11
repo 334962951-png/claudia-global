@@ -4,85 +4,30 @@ import { ThemeMode } from '@/contexts/ThemeContext';
  * Claude-themed syntax highlighting theme factory
  * Returns different syntax themes based on the current theme mode
  *
+ * Uses CSS custom properties (--color-token-*) defined in styles.css @theme
+ * so colors automatically adapt to theme changes (dark/light/gray/white/custom).
+ *
  * @param theme - The current theme mode
  * @returns Prism syntax highlighting theme object
  */
 export const getClaudeSyntaxTheme = (theme: ThemeMode): { [key: string]: React.CSSProperties } => {
-  const themes = {
-    dark: {
-      base: '#e3e8f0',
-      background: 'transparent',
-      comment: '#6b7280',
-      punctuation: '#9ca3af',
-      property: '#f59e0b', // Amber/Orange
-      tag: '#8b5cf6', // Violet
-      string: '#10b981', // Emerald Green
-      function: '#818cf8', // Indigo
-      keyword: '#c084fc', // Light Violet
-      variable: '#a78bfa', // Light Purple
-      operator: '#9ca3af',
-    },
-    gray: {
-      base: '#e3e8f0',
-      background: 'transparent',
-      comment: '#71717a',
-      punctuation: '#a1a1aa',
-      property: '#fbbf24', // Yellow
-      tag: '#a78bfa', // Light Purple
-      string: '#34d399', // Green
-      function: '#93bbfc', // Light Blue
-      keyword: '#d8b4fe', // Light Purple
-      variable: '#c084fc', // Purple
-      operator: '#a1a1aa',
-    },
-    light: {
-      base: '#1f2937',
-      background: 'transparent',
-      comment: '#9ca3af',
-      punctuation: '#6b7280',
-      property: '#dc2626', // Red
-      tag: '#7c3aed', // Purple
-      string: '#059669', // Green
-      function: '#2563eb', // Blue
-      keyword: '#9333ea', // Purple
-      variable: '#8b5cf6', // Violet
-      operator: '#6b7280',
-    },
-    white: {
-      base: '#000000',
-      background: 'transparent',
-      comment: '#6b7280',
-      punctuation: '#374151',
-      property: '#dc2626', // Red
-      tag: '#5b21b6', // Deep Purple
-      string: '#047857', // Dark Green
-      function: '#1e40af', // Dark Blue
-      keyword: '#6b21a8', // Dark Purple
-      variable: '#6d28d9', // Dark Violet
-      operator: '#374151',
-    },
-    custom: {
-      // Default to dark theme colors for custom
-      base: '#e3e8f0',
-      background: 'transparent',
-      comment: '#6b7280',
-      punctuation: '#9ca3af',
-      property: '#f59e0b',
-      tag: '#8b5cf6',
-      string: '#10b981',
-      function: '#818cf8',
-      keyword: '#c084fc',
-      variable: '#a78bfa',
-      operator: '#9ca3af',
-    }
-  };
-
-  const colors = themes[theme] || themes.dark;
+  // CSS variables are theme-aware and defined per theme variant in styles.css
+  const base = 'var(--color-foreground)';
+  const background = 'transparent';
+  const comment = 'var(--color-token-comment)';
+  const punctuation = 'var(--color-token-punctuation)';
+  const property = 'var(--color-token-property)';
+  const tag = 'var(--color-token-tag)';
+  const string = 'var(--color-token-string)';
+  const fn = 'var(--color-token-function)';
+  const keyword = 'var(--color-token-keyword)';
+  const variable = 'var(--color-token-variable)';
+  const operator = 'var(--color-token-operator)';
 
   return {
     'code[class*="language-"]': {
-      color: colors.base,
-      background: colors.background,
+      color: base,
+      background,
       textShadow: 'none',
       fontFamily: 'var(--font-mono)',
       fontSize: '0.875em',
@@ -101,8 +46,8 @@ export const getClaudeSyntaxTheme = (theme: ThemeMode): { [key: string]: React.C
       hyphens: 'none',
     },
     'pre[class*="language-"]': {
-      color: colors.base,
-      background: colors.background,
+      color: base,
+      background,
       textShadow: 'none',
       fontFamily: 'var(--font-mono)',
       fontSize: '0.875em',
@@ -124,102 +69,100 @@ export const getClaudeSyntaxTheme = (theme: ThemeMode): { [key: string]: React.C
       overflow: 'auto',
     },
     ':not(pre) > code[class*="language-"]': {
-      background: theme === 'light'
-        ? 'rgba(139, 92, 246, 0.1)'
-        : 'rgba(139, 92, 246, 0.1)',
+      background: 'var(--color-token-inline-code-bg)',
       padding: '0.1em 0.3em',
       borderRadius: '0.3em',
       whiteSpace: 'normal',
     },
     'comment': {
-      color: colors.comment,
+      color: comment,
       fontStyle: 'italic',
     },
     'prolog': {
-      color: colors.comment,
+      color: comment,
     },
     'doctype': {
-      color: colors.comment,
+      color: comment,
     },
     'cdata': {
-      color: colors.comment,
+      color: comment,
     },
     'punctuation': {
-      color: colors.punctuation,
+      color: punctuation,
     },
     'namespace': {
       opacity: '0.7',
     },
     'property': {
-      color: colors.property,
+      color: property,
     },
     'tag': {
-      color: colors.tag,
+      color: tag,
     },
     'boolean': {
-      color: colors.property,
+      color: property,
     },
     'number': {
-      color: colors.property,
+      color: property,
     },
     'constant': {
-      color: colors.property,
+      color: property,
     },
     'symbol': {
-      color: colors.property,
+      color: property,
     },
     'deleted': {
-      color: '#ef4444',
+      color: 'var(--color-token-deleted)',
     },
     'selector': {
-      color: colors.variable,
+      color: variable,
     },
     'attr-name': {
-      color: colors.variable,
+      color: variable,
     },
     'string': {
-      color: colors.string,
+      color: string,
     },
     'char': {
-      color: colors.string,
+      color: string,
     },
     'builtin': {
-      color: colors.tag,
+      color: tag,
     },
     'url': {
-      color: colors.string,
+      color: string,
     },
     'inserted': {
-      color: colors.string,
+      color: string,
     },
     'entity': {
-      color: colors.variable,
+      color: variable,
       cursor: 'help',
     },
     'atrule': {
-      color: colors.keyword,
+      color: keyword,
     },
     'attr-value': {
-      color: colors.string,
+      color: string,
     },
     'keyword': {
-      color: colors.keyword,
+      color: keyword,
     },
     'function': {
-      color: colors.function,
+      color: fn,
     },
     'class-name': {
-      color: colors.property,
+      color: property,
     },
     'regex': {
-      color: '#06b6d4', // Cyan
+      color: 'var(--color-token-regex)',
     },
     'important': {
-      color: colors.property,
+      color: property,
       fontWeight: 'bold',
     },
     'variable': {
-      color: colors.variable,
+      color: variable,
     },
     'bold': {
       fontWeight: 'bold',
@@ -228,28 +171,28 @@ export const getClaudeSyntaxTheme = (theme: ThemeMode): { [key: string]: React.C
       fontStyle: 'italic',
     },
     'operator': {
-      color: colors.operator,
+      color: operator,
     },
     'script': {
-      color: colors.base,
+      color: base,
     },
     'parameter': {
-      color: colors.property,
+      color: property,
     },
     'method': {
-      color: colors.function,
+      color: fn,
     },
     'field': {
-      color: colors.property,
+      color: property,
     },
     'annotation': {
-      color: colors.comment,
+      color: comment,
     },
     'type': {
-      color: colors.variable,
+      color: variable,
     },
     'module': {
-      color: colors.tag,
+      color: tag,
     },
   };
 };

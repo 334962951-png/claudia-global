@@ -46,7 +46,25 @@ pub struct QueryResult {
     pub last_insert_rowid: Option<i64>,
 }
 
-/// List all tables in the database
+/// List all user-defined tables in the database with metadata
+///
+/// Queries `sqlite_master` for all non-system tables and returns each table's name,
+/// row count, and column information (obtained via `PRAGMA table_info`). Tables are
+/// returned in alphabetical order.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+///
+/// # Returns
+/// `Result<Vec<TableInfo>, String>` - List of tables with their column metadata and row counts
+///
+/// # Errors
+/// Returns an error if the database lock cannot be acquired or any query fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('storage_list_tables'): Promise<TableInfo[]>
+/// ```
 #[tauri::command]
 pub async fn storage_list_tables(db: State<'_, AgentDb>) -> Result<Vec<TableInfo>, String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
@@ -106,7 +124,37 @@ pub async fn storage_list_tables(db: State<'_, AgentDb>) -> Result<Vec<TableInfo
     Ok(tables)
 }
 
-/// Read table data with pagination
+/// Read paginated table data with optional text search
+///
+/// Returns rows from the specified table with pagination support. When a search
+/// query is provided, filters rows where any TEXT/VARCHAR column contains the
+/// search string (case-insensitive LIKE). Validates the table name against
+/// `sqlite_master` to prevent SQL injection. Binary/blob values are returned
+/// as base64-encoded strings.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `tableName` - Name of the table to query (must exist in sqlite_master)
+/// * `page` - 1-based page number
+/// * `pageSize` - Number of rows per page
+/// * `searchQuery` - Optional text to search across all text columns
+///
+/// # Returns
+/// `Result<TableData, String>` - Paginated result with columns, rows (as JSON objects),
+///   total_rows, page, page_size, and total_pages
+///
+/// # Errors
+/// Returns an error if the table name is invalid, the database lock fails, or queries fail
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('storage_read_table', {
+///   tableName: string,
+///   page: number,
+///   pageSize: number,
+///   searchQuery?: string
+/// }): Promise<TableData>
+/// ```
 #[tauri::command]
 #[allow(non_snake_case)]
 pub async fn storage_read_table(
@@ -225,7 +273,34 @@ pub async fn storage_read_table(
     })
 }
 
-/// Update a row in a table
+/// Update an existing row in a database table
+///
+/// Updates one or more columns of a row identified by its primary key values.
+/// The primary key values are passed as a map so the function can build a WHERE
+/// clause that matches the correct row. All column names and values in the updates
+/// map are validated through prepared statement parameter binding.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `tableName` - Name of the table to update
+/// * `primaryKeyValues` - Map of primary key column names to values identifying the row
+/// * `updates` - Map of column names to new values
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Errors
+/// Returns an error if the table name is invalid, primary key columns are missing,
+/// the database lock fails, or the UPDATE statement fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('storage_update_row', {
+///   tableName: string,
+///   primaryKeyValues: Record<string, JsonValue>,
+///   updates: Record<string, JsonValue>
+/// }): Promise<void>
+/// ```
 #[tauri::command]
 #[allow(non_snake_case)]
 pub async fn storage_update_row(
@@ -281,7 +356,31 @@ pub async fn storage_update_row(
     Ok(())
 }
 
-/// Delete a row from a table
+/// Delete a row from a database table
+///
+/// Deletes a row identified by its primary key values. The primary key columns
+/// and values are passed as a map to safely build the WHERE clause via prepared
+/// statement parameters.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `tableName` - Name of the table to delete from
+/// * `primaryKeyValues` - Map of primary key column names to values identifying the row
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Errors
+/// Returns an error if the table name is invalid, primary key columns are missing,
+/// the database lock fails, or the DELETE statement fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('storage_delete_row', {
+///   tableName: string,
+///   primaryKeyValues: Record<string, JsonValue>
+/// }): Promise<void>
+/// ```
 #[tauri::command]
 #[allow(non_snake_case)]
 pub async fn storage_delete_row(
@@ -322,7 +421,30 @@ pub async fn storage_delete_row(
     Ok(())
 }
 
-/// Insert a new row into a table
+/// Insert a new row into a database table
+///
+/// Inserts a new row with the given column values. Column names and values are
+/// passed as a map and bound via prepared statement parameters to prevent injection.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `tableName` - Name of the table to insert into
+/// * `values` - Map of column names to values for the new row
+///
+/// # Returns
+/// `Result<i64, String>` - The ROWID of the newly inserted row
+///
+/// # Errors
+/// Returns an error if the table name is invalid, any value type is unsupported
+/// (objects/arrays), the database lock fails, or the INSERT statement fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('storage_insert_row', {
+///   tableName: string,
+///   values: Record<string, JsonValue>
+/// }): Promise<number>
+/// ```
 #[tauri::command]
 #[allow(non_snake_case)]
 pub async fn storage_insert_row(
@@ -363,7 +485,32 @@ pub async fn storage_insert_row(
     Ok(conn.last_insert_rowid())
 }
 
-/// Execute a raw SQL query
+/// Execute a raw SQL query on the database
+///
+/// Runs an arbitrary SQL statement. SELECT queries return column names and row data.
+/// Non-SELECT queries (INSERT, UPDATE, DELETE, etc.) return rows affected and the
+/// last insert ROWID. Binary/blob values are base64-encoded in results.
+///
+/// # Arguments
+/// * `db` - Database state containing the AgentDb connection
+/// * `query` - The SQL query string to execute
+///
+/// # Returns
+/// `Result<QueryResult, String>` - For SELECT: columns and rows; for mutations:
+///   rows_affected and last_insert_rowid
+///
+/// # Errors
+/// Returns an error if the database lock fails or SQL execution fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('storage_execute_sql', { query: string }): Promise<{
+///   columns: string[];
+///   rows: JsonValue[][];
+///   rowsAffected: number | null;
+///   lastInsertRowid: number | null;
+/// }>
+/// ```
 #[tauri::command]
 pub async fn storage_execute_sql(
     db: State<'_, AgentDb>,
@@ -429,7 +576,26 @@ pub async fn storage_execute_sql(
     }
 }
 
-/// Reset the entire database (with confirmation)
+/// Reset the entire database by dropping and recreating all tables
+///
+/// Destructive operation that disables foreign keys, drops all application tables
+/// (agents, agent_runs, app_settings, environment_variables, environment_variable_groups),
+/// re-initializes the schema, and runs VACUUM to reclaim disk space. The managed
+/// database state is updated with the fresh connection.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for accessing managed database state
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Errors
+/// Returns an error if any table drop fails, re-initialization fails, or VACUUM fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('storage_reset_database'): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn storage_reset_database(app: AppHandle) -> Result<(), String> {
     {
@@ -519,7 +685,25 @@ fn json_to_sql_value(value: &JsonValue) -> Result<Box<dyn rusqlite::ToSql>, Stri
     }
 }
 
-/// Get a setting from the app_settings table
+/// Retrieve an application setting by key
+///
+/// Looks up a single key-value pair from the `app_settings` table. Returns `None`
+/// if the key does not exist (as opposed to an error).
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for accessing managed database state
+/// * `key` - The setting key to look up
+///
+/// # Returns
+/// `Result<Option<String>, String>` - The setting value if found, or `None`
+///
+/// # Errors
+/// Returns an error if the database lock fails or a non-query-returned-no-rows error occurs
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_app_setting', { key: string }): Promise<string | null>
+/// ```
 #[tauri::command]
 pub async fn get_app_setting(app: AppHandle, key: String) -> Result<Option<String>, String> {
     let db_state = app.state::<super::agents::AgentDb>();
@@ -536,7 +720,26 @@ pub async fn get_app_setting(app: AppHandle, key: String) -> Result<Option<Strin
     }
 }
 
-/// Save a setting to the app_settings table (insert or update)
+/// Save or update an application setting (upsert via INSERT OR REPLACE)
+///
+/// Inserts or replaces a key-value pair in the `app_settings` table.
+/// Uses SQLite's INSERT OR REPLACE semantics so the operation is idempotent.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for accessing managed database state
+/// * `key` - The setting key
+/// * `value` - The setting value to store
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Errors
+/// Returns an error if the database lock fails or the INSERT fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('save_app_setting', { key: string, value: string }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn save_app_setting(app: AppHandle, key: String, value: String) -> Result<(), String> {
     let db_state = app.state::<super::agents::AgentDb>();

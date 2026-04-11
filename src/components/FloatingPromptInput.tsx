@@ -986,6 +986,7 @@ const FloatingPromptInputInner = (
                               className={cn(
                                 "w-full flex items-start gap-3 p-3 rounded-md transition-colors text-left",
                                 "hover:bg-accent",
+                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                 selectedThinkingMode === mode.id && "bg-accent"
                               )}
                             >
@@ -1078,6 +1079,7 @@ const FloatingPromptInputInner = (
                         className={cn(
                           "w-full flex items-start gap-3 p-3 rounded-md transition-colors text-left",
                           "hover:bg-accent",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           selectedModel === model.id && "bg-accent"
                         )}
                       >

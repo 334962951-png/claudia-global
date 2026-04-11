@@ -674,7 +674,7 @@ export const ReadResultWidget: React.FC<{ content: string; filePath?: string }> 
         {isLargeFile && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
           >
             <ChevronRight
               className={cn("h-3 w-3 transition-transform", isExpanded && "rotate-90")}
@@ -1122,7 +1122,7 @@ export const GrepWidget = ({
             <>
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
               >
                 {isExpanded ? (
                   <ChevronDown className="h-3.5 w-3.5" />
@@ -1475,7 +1475,7 @@ export const MCPWidget: React.FC<{
                 {isLargeInput && (
                   <button
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="text-violet-500 hover:text-violet-600 transition-colors"
+                    className="text-violet-500 hover:text-violet-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                   >
                     {isExpanded ? (
                       <ChevronUp className="h-3.5 w-3.5" />
@@ -1559,7 +1559,7 @@ export const MCPWidget: React.FC<{
                 <div className="text-center mt-2">
                   <button
                     onClick={() => setIsExpanded(true)}
-                    className="text-xs text-violet-500 hover:text-violet-600 transition-colors inline-flex items-center gap-1"
+                    className="text-xs text-violet-500 hover:text-violet-600 transition-colors inline-flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                   >
                     <ChevronDown className="h-3 w-3" />
                     Show full parameters
@@ -1745,7 +1745,7 @@ export const MultiEditWidget: React.FC<{
         <div className="space-y-1">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
           >
             <ChevronRight
               className={cn("h-3 w-3 transition-transform", isExpanded && "rotate-90")}
@@ -2099,7 +2099,7 @@ export const SystemInitializedWidget: React.FC<{
               <div className="space-y-2">
                 <button
                   onClick={() => setMcpExpanded(!mcpExpanded)}
-                  className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                 >
                   <Package className="h-3.5 w-3.5" />
                   <span>MCP Services ({mcpTools.length})</span>
@@ -2186,7 +2186,7 @@ export const TaskWidget: React.FC<{
           <div className="space-y-2">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
             >
               <ChevronRight
                 className={cn("h-3 w-3 transition-transform", isExpanded && "rotate-90")}
@@ -2362,7 +2362,7 @@ export const WebSearchWidget = ({
                       {/* Toggle Button */}
                       <button
                         onClick={() => toggleSection(idx)}
-                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                       >
                         {isExpanded ? (
                           <ChevronDown className="h-3 w-3" />
@@ -2382,7 +2382,7 @@ export const WebSearchWidget = ({
                             <button
                               key={linkIdx}
                               onClick={() => handleLinkClick(link.url)}
-                              className="group flex flex-col gap-0.5 p-2.5 rounded-md border bg-card/30 hover:bg-card/50 hover:border-blue-500/30 transition-all text-left"
+                              className="group flex flex-col gap-0.5 p-2.5 rounded-md border bg-card/30 hover:bg-card/50 hover:border-blue-500/30 transition-all text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <div className="flex items-start gap-2">
                                 <Globe2 className="h-3.5 w-3.5 text-blue-500/70 mt-0.5 flex-shrink-0" />
@@ -2408,7 +2408,7 @@ export const WebSearchWidget = ({
                                 e.stopPropagation();
                                 handleLinkClick(link.url);
                               }}
-                              className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/10 hover:border-blue-500/20 transition-all"
+                              className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/10 hover:border-blue-500/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                               <Globe2 className="h-3 w-3 text-blue-500/70" />
                               <span className="truncate max-w-[180px] text-foreground/70 group-hover:text-foreground/90">
@@ -2448,7 +2448,7 @@ export const ThinkingWidget: React.FC<{
     <div className="rounded-lg border border-gray-500/20 bg-gray-500/5 overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-500/10 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-500/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex items-center gap-2">
           <div className="relative">
@@ -2554,7 +2554,7 @@ export const WebFetchWidget: React.FC<{
           </span>
           <button
             onClick={handleUrlClick}
-            className="text-sm text-foreground/80 hover:text-foreground flex-1 truncate text-left hover:underline decoration-purple-500/50"
+            className="text-sm text-foreground/80 hover:text-foreground flex-1 truncate text-left hover:underline decoration-purple-500/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
           >
             {url}
           </button>
@@ -2565,7 +2565,7 @@ export const WebFetchWidget: React.FC<{
           <div className="ml-6 space-y-1">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
             >
               <ChevronRight
                 className={cn("h-3 w-3 transition-transform", isExpanded && "rotate-90")}
@@ -2618,7 +2618,7 @@ export const WebFetchWidget: React.FC<{
                 {isTruncated && (
                   <button
                     onClick={() => setShowFullContent(!showFullContent)}
-                    className="text-xs text-purple-500 hover:text-purple-600 transition-colors flex items-center gap-1"
+                    className="text-xs text-purple-500 hover:text-purple-600 transition-colors flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                   >
                     {showFullContent ? (
                       <>

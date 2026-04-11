@@ -118,7 +118,7 @@ const TabItem: React.FC<TabItemProps> = ({ tab, isActive, onClose, onClick, isDr
         className={cn(
           "flex-shrink-0 w-4 h-4 flex items-center justify-center rounded-sm",
           "transition-all duration-100 hover:bg-destructive/20 hover:text-destructive",
-          "focus:outline-none focus:ring-1 focus:ring-destructive/50",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           (isHovered || isActive) ? "opacity-100" : "opacity-0"
         )}
         title={`Close ${tab.title}`}
@@ -339,6 +339,7 @@ const TabManager: React.FC<TabManagerProps> = ({ className }) => {
             className={cn(
               "p-1.5 hover:bg-muted/80 rounded-sm z-20 ml-1",
               "transition-colors duration-200 flex items-center justify-center",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               "bg-background/80 backdrop-blur-sm shadow-sm border border-border/50"
             )}
             title="Scroll tabs left"
@@ -393,6 +394,7 @@ const TabManager: React.FC<TabManagerProps> = ({ className }) => {
             className={cn(
               "p-1.5 hover:bg-muted/80 rounded-sm z-20 mr-1",
               "transition-colors duration-200 flex items-center justify-center",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               "bg-background/80 backdrop-blur-sm shadow-sm border border-border/50"
             )}
             title="Scroll tabs right"
@@ -410,6 +412,7 @@ const TabManager: React.FC<TabManagerProps> = ({ className }) => {
         disabled={!canAddTab()}
         className={cn(
           "p-2 mx-2 rounded-md transition-all duration-200 flex items-center justify-center",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           "border border-border/50 bg-background/50 backdrop-blur-sm",
           canAddTab()
             ? "hover:bg-muted/80 hover:border-border text-muted-foreground hover:text-foreground hover:shadow-sm"

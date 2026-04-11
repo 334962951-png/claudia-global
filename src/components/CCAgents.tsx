@@ -186,13 +186,6 @@ export const CCAgents: React.FC<CCAgentsProps> = ({ onBack, className }) => {
     setToast({ message: t.agents.agentUpdatedSuccessfully, type: "success" });
   };
 
-  // const handleRunClick = (run: AgentRunWithMetrics) => {
-  //   if (run.id) {
-  //     setSelectedRunId(run.id);
-  //     setView("viewRun");
-  //   }
-  // };
-
   const handleExecutionComplete = async () => {
     // Reload runs when returning from execution
     await loadRuns();

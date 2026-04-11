@@ -500,6 +500,28 @@ fn create_system_command_with_env(
 }
 
 /// Lists all projects in the ~/.claude/projects directory
+/// List all projects from `~/.claude/projects`
+///
+/// Reads the directory listing of `~/.claude/projects/`, decodes project paths from
+/// directory names, and collects session IDs from JSONL filenames within each project
+/// subdirectory. Project directory names are encoded (e.g., hyphens replace slashes).
+///
+/// # Returns
+/// `Result<Vec<Project>, String>` - List of projects with id (directory name), path,
+///   sessions (JSONL file names without extension), and created_at (Unix timestamp)
+///
+/// # Errors
+/// Returns an error if the `~/.claude` directory cannot be found or canonicalized
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('list_projects'): Promise<Array<{
+///   id: string;
+///   path: string;
+///   sessions: string[];
+///   created_at: number;
+/// }>>
+/// ```
 #[tauri::command]
 pub async fn list_projects() -> Result<Vec<Project>, String> {
     info_log!("Listing projects from ~/.claude/projects");
@@ -585,6 +607,35 @@ pub async fn list_projects() -> Result<Vec<Project>, String> {
 }
 
 /// Gets sessions for a specific project
+/// Get all sessions for a specific project
+///
+/// Reads the project directory under `~/.claude/projects/{project_id}/`, extracts
+/// session metadata from JSONL files (first user message, timestamp), and optionally
+/// loads associated todo data from `~/.claude/todos/`.
+///
+/// # Arguments
+/// * `project_id` - The project directory name (encoded path) used as identifier
+///
+/// # Returns
+/// `Result<Vec<Session>, String>` - List of sessions with id, project_id, project_path,
+///   todo_data, created_at, first_message, and message_timestamp
+///
+/// # Errors
+/// Returns an error if the `~/.claude` directory cannot be found or the project
+/// directory does not exist
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_project_sessions', { projectId: string }): Promise<Array<{
+///   id: string;
+///   project_id: string;
+///   project_path: string;
+///   todo_data: any | null;
+///   created_at: number;
+///   first_message: string | null;
+///   message_timestamp: string | null;
+/// }>>
+/// ```
 #[tauri::command]
 pub async fn get_project_sessions(project_id: String) -> Result<Vec<Session>, String> {
     log::info!("Getting sessions for project: {}", project_id);
@@ -672,6 +723,22 @@ pub async fn get_project_sessions(project_id: String) -> Result<Vec<Session>, St
 }
 
 /// Reads the Claude settings file
+/// Read Claude Code settings from `~/.claude/settings.json`
+///
+/// Loads and parses the user's Claude settings file. Returns an empty settings
+/// object if the file does not exist.
+///
+/// # Returns
+/// `Result<ClaudeSettings, String>` - Settings as a JSON value wrapper
+///
+/// # Errors
+/// Returns an error if the `~/.claude` directory cannot be found or the file
+/// cannot be parsed as JSON
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_claude_settings'): Promise<Record<string, any>>
+/// ```
 #[tauri::command]
 pub async fn get_claude_settings() -> Result<ClaudeSettings, String> {
     log::info!("Reading Claude settings");
@@ -696,6 +763,26 @@ pub async fn get_claude_settings() -> Result<ClaudeSettings, String> {
 }
 
 /// Opens a new Claude Code session by executing the claude command
+/// Open a new Claude Code CLI session in a terminal window
+///
+/// Launches a new Claude Code CLI process at the given path. In debug mode, spawns
+/// the process directly; in release mode, opens a terminal window (platform-specific).
+/// Returns a session ID for tracking the new session.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary
+/// * `path` - Optional working directory for the session; defaults to home directory
+///
+/// # Returns
+/// `Result<String, String>` - Session ID of the newly opened session
+///
+/// # Errors
+/// Returns an error if the Claude binary cannot be found or the process fails to start
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('open_new_session', { path?: string }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn open_new_session(app: AppHandle, path: Option<String>) -> Result<String, String> {
     log::info!("Opening new Claude Code session at path: {:?}", path);
@@ -746,6 +833,22 @@ pub async fn open_new_session(app: AppHandle, path: Option<String>) -> Result<St
 }
 
 /// Reads the CLAUDE.md system prompt file
+/// Read the CLAUDE.md system prompt from `~/.claude/CLAUDE.md`
+///
+/// Loads and returns the content of the user's global CLAUDE.md file.
+/// This file is used as the system prompt for Claude Code sessions.
+///
+/// # Returns
+/// `Result<String, String>` - The content of `~/.claude/CLAUDE.md`
+///
+/// # Errors
+/// Returns an error if the `~/.claude` directory cannot be found or the file
+/// cannot be read
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_system_prompt'): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn get_system_prompt() -> Result<String, String> {
     log::info!("Reading CLAUDE.md system prompt");
@@ -762,6 +865,29 @@ pub async fn get_system_prompt() -> Result<String, String> {
 }
 
 /// Checks if Claude Code is installed and gets its version
+/// Check whether Claude Code is installed and get its version
+///
+/// Runs `claude --version` (or sidecar `claude-code --version`) and parses the
+/// output to determine if Claude Code is available and what version is installed.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary
+///
+/// # Returns
+/// `Result<ClaudeVersionStatus, String>` - Object with `is_installed` flag,
+///   optional `version` string, and raw `output` from the command
+///
+/// # Errors
+/// Returns an error if the Claude binary cannot be found
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('check_claude_version'): Promise<{
+///   is_installed: boolean;
+///   version: string | null;
+///   output: string;
+/// }>
+/// ```
 #[tauri::command]
 pub async fn check_claude_version(app: AppHandle) -> Result<ClaudeVersionStatus, String> {
     log::info!("Checking Claude Code version");
@@ -941,6 +1067,24 @@ pub async fn check_claude_version(app: AppHandle) -> Result<ClaudeVersionStatus,
 }
 
 /// Saves the CLAUDE.md system prompt file
+/// Save the CLAUDE.md system prompt to `~/.claude/CLAUDE.md`
+///
+/// Overwrites the global CLAUDE.md file with the provided content.
+///
+/// # Arguments
+/// * `content` - The new content for the CLAUDE.md file
+///
+/// # Returns
+/// `Result<String, String>` - Confirmation message on success
+///
+/// # Errors
+/// Returns an error if the `~/.claude` directory cannot be found or the file
+/// cannot be written
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('save_system_prompt', { content: string }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn save_system_prompt(content: String) -> Result<String, String> {
     log::info!("Saving CLAUDE.md system prompt");
@@ -954,6 +1098,23 @@ pub async fn save_system_prompt(content: String) -> Result<String, String> {
 }
 
 /// Saves the Claude settings file
+/// Save Claude Code settings to `~/.claude/settings.json`
+///
+/// Serializes and writes the provided JSON settings object to the Claude settings file.
+///
+/// # Arguments
+/// * `settings` - Complete settings object to serialize and write
+///
+/// # Returns
+/// `Result<String, String>` - Confirmation message on success
+///
+/// # Errors
+/// Returns an error if the settings cannot be serialized or the file cannot be written
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('save_claude_settings', { settings: Record<string, any> }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn save_claude_settings(settings: serde_json::Value) -> Result<String, String> {
     log::info!("Saving Claude settings");
@@ -972,6 +1133,30 @@ pub async fn save_claude_settings(settings: serde_json::Value) -> Result<String,
 }
 
 /// Recursively finds all CLAUDE.md files in a project directory
+/// Find all CLAUDE.md files within a project directory tree
+///
+/// Recursively searches the given project path for files named `CLAUDE.md`
+/// (case-insensitive match) and returns their paths, sizes, and modification times.
+///
+/// # Arguments
+/// * `project_path` - Absolute path to the project root directory
+///
+/// # Returns
+/// `Result<Vec<ClaudeMdFile>, String>` - List of CLAUDE.md files with relative_path,
+///   absolute_path, size, and modified timestamp
+///
+/// # Errors
+/// Returns an error if the project path does not exist or is not accessible
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('find_claude_md_files', { projectPath: string }): Promise<Array<{
+///   relative_path: string;
+///   absolute_path: string;
+///   size: number;
+///   modified: number;
+/// }>>
+/// ```
 #[tauri::command]
 pub async fn find_claude_md_files(project_path: String) -> Result<Vec<ClaudeMdFile>, String> {
     log::info!("Finding CLAUDE.md files in project: {}", project_path);
@@ -1058,6 +1243,23 @@ fn find_claude_md_recursive(
 }
 
 /// Reads a specific CLAUDE.md file by its absolute path
+/// Read the content of a specific CLAUDE.md file
+///
+/// Loads and returns the full text content of the file at the given path.
+///
+/// # Arguments
+/// * `file_path` - Absolute path to the CLAUDE.md file
+///
+/// # Returns
+/// `Result<String, String>` - The file content as a string
+///
+/// # Errors
+/// Returns an error if the file does not exist or cannot be read
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('read_claude_md_file', { filePath: string }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn read_claude_md_file(file_path: String) -> Result<String, String> {
     log::info!("Reading CLAUDE.md file: {}", file_path);
@@ -1071,6 +1273,25 @@ pub async fn read_claude_md_file(file_path: String) -> Result<String, String> {
 }
 
 /// Saves a specific CLAUDE.md file by its absolute path
+/// Save content to a CLAUDE.md file
+///
+/// Writes the provided content to the specified file path, overwriting any
+/// existing content.
+///
+/// # Arguments
+/// * `file_path` - Absolute path to the CLAUDE.md file to write
+/// * `content` - The content to write to the file
+///
+/// # Returns
+/// `Result<String, String>` - Confirmation message on success
+///
+/// # Errors
+/// Returns an error if the file cannot be written
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('save_claude_md_file', { filePath: string, content: string }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn save_claude_md_file(file_path: String, content: String) -> Result<String, String> {
     log::info!("Saving CLAUDE.md file: {}", file_path);
@@ -1089,6 +1310,27 @@ pub async fn save_claude_md_file(file_path: String, content: String) -> Result<S
 }
 
 /// Loads the JSONL history for a specific session
+/// Load the full message history for a Claude session
+///
+/// Reads the session's JSONL file and returns all message entries as parsed JSON values.
+///
+/// # Arguments
+/// * `session_id` - The session UUID (JSONL filename without extension)
+/// * `project_id` - The project directory name (encoded path) the session belongs to
+///
+/// # Returns
+/// `Result<Vec<serde_json::Value>, String>` - List of message entries from the JSONL file
+///
+/// # Errors
+/// Returns an error if the session file cannot be found or parsed
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('load_session_history', {
+///   sessionId: string,
+///   projectId: string
+/// }): Promise<any[]>
+/// ```
 #[tauri::command]
 pub async fn load_session_history(
     session_id: String,
@@ -1130,6 +1372,32 @@ pub async fn load_session_history(
 
 
 /// Execute a new interactive Claude Code session with streaming output
+/// Execute Claude Code with a user prompt and track the process
+///
+/// Spawns a new Claude Code CLI process with the provided prompt, registers it
+/// in the process registry, and emits real-time output events to the frontend.
+/// Returns immediately after spawning; output is streamed via events.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary and emitting events
+/// * `project_path` - Working directory for the Claude session
+/// * `prompt` - The user prompt to send to Claude Code
+/// * `model` - The Claude model to use (e.g., `"sonnet"`, `"opus"`)
+///
+/// # Returns
+/// `Result<String, String>` - Session ID of the spawned process
+///
+/// # Errors
+/// Returns an error if the Claude binary cannot be found or the process fails to start
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('execute_claude_code', {
+///   projectPath: string,
+///   prompt: string,
+///   model: string
+/// }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn execute_claude_code(
     app: AppHandle,
@@ -1184,6 +1452,31 @@ pub async fn execute_claude_code(
 }
 
 /// Continue an existing Claude Code conversation with streaming output
+/// Continue an existing Claude session with a follow-up prompt
+///
+/// Adds a message to an existing session's JSONL file and continues the session.
+/// Emits real-time output via Tauri events.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for emitting events
+/// * `project_path` - Working directory for the Claude session
+/// * `prompt` - The follow-up user prompt
+/// * `model` - The Claude model to use
+///
+/// # Returns
+/// `Result<String, String>` - Session ID of the continued session
+///
+/// # Errors
+/// Returns an error if the session JSONL file cannot be appended to or the process fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('continue_claude_code', {
+///   projectPath: string,
+///   prompt: string,
+///   model: string
+/// }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn continue_claude_code(
     app: AppHandle,
@@ -1232,6 +1525,34 @@ pub async fn continue_claude_code(
 }
 
 /// Resume an existing Claude Code session by ID with streaming output
+/// Resume a previously saved Claude session with a new prompt
+///
+/// Re-launches Claude Code using the session history file as input and appends a
+/// new prompt to continue the conversation. The session file must exist.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for locating the Claude binary
+/// * `project_path` - Working directory for the Claude session
+/// * `session_id` - UUID of the session to resume
+/// * `prompt` - The new prompt to append
+/// * `model` - The Claude model to use
+///
+/// # Returns
+/// `Result<String, String>` - Session ID of the resumed session
+///
+/// # Errors
+/// Returns an error if the session file cannot be found, the Claude binary is unavailable,
+/// or the process fails to start
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('resume_claude_code', {
+///   projectPath: string,
+///   sessionId: string,
+///   prompt: string,
+///   model: string
+/// }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn resume_claude_code(
     app: AppHandle,
@@ -1283,6 +1604,26 @@ pub async fn resume_claude_code(
 }
 
 /// Cancel the currently running Claude Code execution
+/// Cancel a running Claude Code session
+///
+/// Sends a SIGTERM signal to the Claude Code process identified by session_id
+/// (or the most recent session if session_id is None). Removes it from the
+/// process registry.
+///
+/// # Arguments
+/// * `app` - Tauri AppHandle for accessing the process registry
+/// * `session_id` - Optional session ID to cancel; defaults to the latest session
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Errors
+/// Returns an error if the process cannot be found or the termination signal fails
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('cancel_claude_execution', { sessionId?: string }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn cancel_claude_execution(
     app: AppHandle,
@@ -1422,6 +1763,17 @@ pub async fn cancel_claude_execution(
 }
 
 /// Get all running Claude sessions
+/// List all currently running Claude Code sessions
+///
+/// Queries the process registry for all active Claude CLI processes.
+///
+/// # Returns
+/// `Result<Vec<ProcessInfo>, String>` - List of active process descriptors
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('list_running_claude_sessions'): Promise<ProcessInfo[]>
+/// ```
 #[tauri::command]
 pub async fn list_running_claude_sessions(
     registry: tauri::State<'_, crate::process::ProcessRegistryState>,
@@ -1430,6 +1782,25 @@ pub async fn list_running_claude_sessions(
 }
 
 /// Get live output from a Claude session
+/// Get accumulated output from a running Claude session
+///
+/// Returns the buffered stdout/stderr collected so far from the session's
+/// child process.
+///
+/// # Arguments
+/// * `registry` - Process registry state
+/// * `session_id` - The session UUID to retrieve output for
+///
+/// # Returns
+/// `Result<String, String>` - Accumulated output string
+///
+/// # Errors
+/// Returns an error if the session is not found in the registry
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_claude_session_output', { sessionId: string }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn get_claude_session_output(
     registry: tauri::State<'_, crate::process::ProcessRegistryState>,
@@ -1788,6 +2159,25 @@ async fn spawn_claude_sidecar(
 }
 
 /// Lists files and directories in a given path
+/// List the contents of a directory with file metadata
+///
+/// Recursively lists all files and directories under the given path, including
+/// size, extension, and directory flag for each entry.
+///
+/// # Arguments
+/// * `directory_path` - Absolute path to the directory to list
+///
+/// # Returns
+/// `Result<Vec<FileEntry>, String>` - List of file/directory entries with name,
+///   path, is_directory, size, and extension
+///
+/// # Errors
+/// Returns an error if the path is empty or inaccessible
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('list_directory_contents', { directoryPath: string }): Promise<FileEntry[]>
+/// ```
 #[tauri::command]
 pub async fn list_directory_contents(directory_path: String) -> Result<Vec<FileEntry>, String> {
     log::info!("Listing directory contents: '{}'", directory_path);
@@ -1865,6 +2255,24 @@ pub async fn list_directory_contents(directory_path: String) -> Result<Vec<FileE
 }
 
 /// Search for files and directories matching a pattern
+/// Search for files matching a text query in their name
+///
+/// Performs a filename search under the given base path using case-insensitive substring matching.
+///
+/// # Arguments
+/// * `base_path` - Absolute path to the root directory for the search
+/// * `query` - Case-insensitive substring to match in filenames
+///
+/// # Returns
+/// `Result<Vec<FileEntry>, String>` - List of matching file entries
+///
+/// # Errors
+/// Returns an error if base_path is empty or inaccessible
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('search_files', { basePath: string, query: string }): Promise<FileEntry[]>
+/// ```
 #[tauri::command]
 pub async fn search_files(base_path: String, query: String) -> Result<Vec<FileEntry>, String> {
     log::info!("Searching files in '{}' for: '{}'", base_path, query);
@@ -1982,6 +2390,28 @@ fn search_files_recursive(
 }
 
 /// Creates a checkpoint for the current session state
+/// Create a new checkpoint of the current project state
+///
+/// Saves a snapshot of the filesystem under the project path, tagged with the
+/// provided session and project IDs, to the checkpoint manager state.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `session_id` - The session ID associated with this checkpoint
+/// * `project_id` - The project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<String, String>` - The created checkpoint ID
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('create_checkpoint', {
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn create_checkpoint(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2042,6 +2472,30 @@ pub async fn create_checkpoint(
 }
 
 /// Restores a session to a specific checkpoint
+/// Restore the project to a previously saved checkpoint
+///
+/// Reverts the project filesystem to the state captured in the given checkpoint.
+/// The session and project IDs must match the checkpoint being restored.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `checkpoint_id` - ID of the checkpoint to restore
+/// * `session_id` - Session ID associated with the checkpoint
+/// * `project_id` - Project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<String, String>` - Confirmation message with checkpoint ID
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('restore_checkpoint', {
+///   checkpointId: string,
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn restore_checkpoint(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2091,6 +2545,27 @@ pub async fn restore_checkpoint(
 }
 
 /// Lists all checkpoints for a session
+/// List all saved checkpoints for a session
+///
+/// Returns metadata for every checkpoint stored under the given session.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `session_id` - Session ID to list checkpoints for
+/// * `project_id` - Project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - JSON array of checkpoint descriptors
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('list_checkpoints', {
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<any>
+/// ```
 #[tauri::command]
 pub async fn list_checkpoints(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2113,6 +2588,30 @@ pub async fn list_checkpoints(
 }
 
 /// Forks a new timeline branch from a checkpoint
+/// Fork a new session from an existing checkpoint
+///
+/// Creates a new session by restoring the project state from a checkpoint and
+/// starting a fresh Claude session from that restored state.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `checkpoint_id` - ID of the checkpoint to fork from
+/// * `session_id` - Source session ID
+/// * `project_id` - Project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<String, String>` - New session ID
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('fork_from_checkpoint', {
+///   checkpointId: string,
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn fork_from_checkpoint(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2163,6 +2662,28 @@ pub async fn fork_from_checkpoint(
 }
 
 /// Gets the timeline for a session
+/// Get the session timeline with checkpoint events
+///
+/// Returns a chronological list of events (messages, checkpoints, restores) for
+/// a session, useful for displaying a visual timeline in the UI.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `session_id` - Session ID
+/// * `project_id` - Project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - Timeline event data
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_session_timeline', {
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<any>
+/// ```
 #[tauri::command]
 pub async fn get_session_timeline(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2185,6 +2706,28 @@ pub async fn get_session_timeline(
 }
 
 /// Updates checkpoint settings for a session
+/// Update checkpoint settings for a session
+///
+/// Modifies the checkpoint configuration (e.g., auto-checkpoint interval, retention
+/// count) for the given session.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `session_id` - Session ID
+/// * `project_id` - Project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - Updated settings object
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('update_checkpoint_settings', {
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<any>
+/// ```
 #[tauri::command]
 pub async fn update_checkpoint_settings(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2223,6 +2766,29 @@ pub async fn update_checkpoint_settings(
 }
 
 /// Gets diff between two checkpoints
+/// Get the diff between two checkpoints
+///
+/// Computes and returns the filesystem differences (added, removed, modified files)
+/// between two checkpoint states.
+///
+/// # Arguments
+/// * `from_checkpoint_id` - Source checkpoint ID
+/// * `to_checkpoint_id` - Target checkpoint ID
+/// * `session_id` - Session ID
+/// * `project_id` - Project directory name
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - Diff data (files changed, sizes, etc.)
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_checkpoint_diff', {
+///   fromCheckpointId: string,
+///   toCheckpointId: string,
+///   sessionId: string,
+///   projectId: string
+/// }): Promise<any>
+/// ```
 #[tauri::command]
 pub async fn get_checkpoint_diff(
     from_checkpoint_id: String,
@@ -2310,6 +2876,28 @@ pub async fn get_checkpoint_diff(
 }
 
 /// Tracks a message for checkpointing
+/// Track a user message within a session for checkpoint correlation
+///
+/// Records a message reference in the checkpoint manager state, linking it to
+/// the active session so checkpoints can be correlated with conversation turns.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `session_id` - Session ID
+/// * `project_id` - Project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - Tracking confirmation
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('track_checkpoint_message', {
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<any>
+/// ```
 #[tauri::command]
 pub async fn track_checkpoint_message(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2332,6 +2920,28 @@ pub async fn track_checkpoint_message(
 }
 
 /// Checks if auto-checkpoint should be triggered
+/// Check whether an automatic checkpoint should be created
+///
+/// Evaluates the current checkpoint settings and session state to determine if
+/// an auto-checkpoint is due based on elapsed time or message count thresholds.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `session_id` - Session ID
+/// * `project_id` - Project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - Auto-checkpoint recommendation or null
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('check_auto_checkpoint', {
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<any>
+/// ```
 #[tauri::command]
 pub async fn check_auto_checkpoint(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2351,6 +2961,28 @@ pub async fn check_auto_checkpoint(
 }
 
 /// Triggers cleanup of old checkpoints
+/// Delete checkpoints older than the configured retention period
+///
+/// Removes expired checkpoints based on the session's checkpoint settings (e.g., keep
+/// last N checkpoints or checkpoints newer than N days).
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `session_id` - Session ID
+/// * `project_id` - Project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - Cleanup result with count of deleted checkpoints
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('cleanup_old_checkpoints', {
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<any>
+/// ```
 #[tauri::command]
 pub async fn cleanup_old_checkpoints(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2381,6 +3013,28 @@ pub async fn cleanup_old_checkpoints(
 }
 
 /// Gets checkpoint settings for a session
+/// Get the current checkpoint settings for a session
+///
+/// Retrieves the active checkpoint configuration (auto-save interval, retention
+/// policy, etc.) for the given session.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `session_id` - Session ID
+/// * `project_id` - Project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - Checkpoint settings object
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_checkpoint_settings', {
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<any>
+/// ```
 #[tauri::command]
 pub async fn get_checkpoint_settings(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2406,6 +3060,22 @@ pub async fn get_checkpoint_settings(
 }
 
 /// Clears checkpoint manager for a session (cleanup on session end)
+/// Clear and release all checkpoint state for a session
+///
+/// Shuts down the checkpoint manager for a session, releasing any held resources.
+/// This is typically called when a session ends.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `session_id` - Session ID to clear
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('clear_checkpoint_manager', { sessionId: string }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn clear_checkpoint_manager(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2418,6 +3088,18 @@ pub async fn clear_checkpoint_manager(
 }
 
 /// Gets checkpoint state statistics (for debugging/monitoring)
+/// Get aggregate checkpoint statistics across all active sessions
+///
+/// Returns a summary of the checkpoint manager's current state: number of active
+/// sessions, total checkpoint count, and disk usage.
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - Aggregated stats object
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_checkpoint_state_stats'): Promise<any>
+/// ```
 #[tauri::command]
 pub async fn get_checkpoint_state_stats(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2432,6 +3114,28 @@ pub async fn get_checkpoint_state_stats(
 }
 
 /// Gets files modified in the last N minutes for a session
+/// Get a list of files modified since the last checkpoint
+///
+/// Returns all files that have been modified after the most recent checkpoint
+/// for the session, useful for displaying changed-files in the UI.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `session_id` - Session ID
+/// * `project_id` - Project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - List of recently modified file paths
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_recently_modified_files', {
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<any>
+/// ```
 #[tauri::command]
 pub async fn get_recently_modified_files(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2468,6 +3172,28 @@ pub async fn get_recently_modified_files(
 }
 
 /// Track session messages from the frontend for checkpointing
+/// Register session message metadata with the checkpoint manager
+///
+/// Associates a set of message IDs or content hashes with the session so that
+/// checkpoints can be aligned with specific conversation turns.
+///
+/// # Arguments
+/// * `state` - Tauri state for CheckpointState
+/// * `session_id` - Session ID
+/// * `project_id` - Project directory name
+/// * `project_path` - Absolute path to the project root
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - Confirmation
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('track_session_messages', {
+///   sessionId: string,
+///   projectId: string,
+///   projectPath: string
+/// }): Promise<any>
+/// ```
 #[tauri::command]
 pub async fn track_session_messages(
     state: tauri::State<'_, crate::checkpoint::state::CheckpointState>,
@@ -2502,6 +3228,29 @@ pub async fn track_session_messages(
 }
 
 /// Gets hooks configuration from settings at specified scope
+/// Retrieve hooks configuration for a given scope
+///
+/// Loads the hooks configuration from the appropriate settings file based on scope:
+/// `"local"` reads from the app's internal config, `"user"` from `~/.claude/hooks.json`,
+/// and `"project"` from `{project_path}/.claude/hooks.json`.
+///
+/// # Arguments
+/// * `scope` - Configuration scope: `"local"`, `"user"`, or `"project"`
+/// * `project_path` - Required when scope is `"project"`; the project root path
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - Parsed hooks configuration object
+///
+/// # Errors
+/// Returns an error if project_path is missing for project scope or the file cannot be read
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_hooks_config', {
+///   scope: 'local' | 'user' | 'project',
+///   projectPath?: string
+/// }): Promise<Record<string, any>>
+/// ```
 #[tauri::command]
 pub async fn get_hooks_config(scope: String, project_path: Option<String>) -> Result<serde_json::Value, String> {
     log::info!("Getting hooks config for scope: {}, project: {:?}", scope, project_path);
@@ -2538,6 +3287,30 @@ pub async fn get_hooks_config(scope: String, project_path: Option<String>) -> Re
 }
 
 /// Updates hooks configuration in settings at specified scope
+/// Save or update hooks configuration for a given scope
+///
+/// Writes the hooks configuration to the appropriate file based on scope.
+/// For project scope, creates the `.claude/` directory and `hooks.json` if needed.
+///
+/// # Arguments
+/// * `scope` - Configuration scope: `"local"`, `"user"`, or `"project"`
+/// * `hooks` - JSON object containing the hooks configuration
+/// * `project_path` - Required when scope is `"project"`; the project root path
+///
+/// # Returns
+/// `Result<String, String>` - Confirmation message on success
+///
+/// # Errors
+/// Returns an error if project_path is missing for project scope or the file cannot be written
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('update_hooks_config', {
+///   scope: 'local' | 'user' | 'project',
+///   hooks: Record<string, any>,
+///   projectPath?: string
+/// }): Promise<string>
+/// ```
 #[tauri::command]
 pub async fn update_hooks_config(
     scope: String,
@@ -2593,6 +3366,25 @@ pub async fn update_hooks_config(
 }
 
 /// Validates a hook command by dry-running it
+/// Validate the syntax of a hook command without executing it
+///
+/// Parses the command string to check for basic shell syntax correctness
+/// (matching quotes, balanced brackets, etc.) without running it.
+///
+/// # Arguments
+/// * `command` - The shell command string to validate
+///
+/// # Returns
+/// `Result<serde_json::Value, String>` - Validation result object with `valid` boolean
+///   and optional `error` string
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('validate_hook_command', { command: string }): Promise<{
+///   valid: boolean;
+///   error?: string;
+/// }>
+/// ```
 #[tauri::command]
 pub async fn validate_hook_command(command: String) -> Result<serde_json::Value, String> {
     log::info!("Validating hook command syntax");
@@ -2631,6 +3423,23 @@ pub async fn validate_hook_command(command: String) -> Result<serde_json::Value,
 }
 
 /// Deletes a session file and its associated data
+/// Delete a session and its associated checkpoints
+///
+/// Removes the session's JSONL file and all related checkpoint records from
+/// the checkpoint manager.
+///
+/// # Arguments
+/// * `app` - Tauri state for CheckpointState
+/// * `session_id` - Session ID to delete
+/// * `project_id` - Project directory name
+///
+/// # Returns
+/// `Result<(), String>` - Success or an error message
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('delete_session', { sessionId: string, projectId: string }): Promise<void>
+/// ```
 #[tauri::command]
 pub async fn delete_session(
     app: tauri::State<'_, crate::checkpoint::state::CheckpointState>,

@@ -611,7 +611,7 @@ export const UsageDashboard: React.FC<UsageDashboardProps> = ({ onBack }) => {
 
                                     {/* Bar */}
                                     <div
-                                      className="w-full bg-[#d97757] hover:opacity-80 transition-opacity rounded-t cursor-pointer"
+                                      className="w-full bg-accent-brand hover:opacity-80 transition-opacity rounded-t cursor-pointer"
                                       style={{ height: `${heightPercent}%` }}
                                     />
 

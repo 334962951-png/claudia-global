@@ -434,8 +434,6 @@ export { TAB_SCREEN_NAMES };
 
 // Hook for tracking feature experiments
 export function useFeatureExperiment(featureName: string, variant: string) {
-  // const trackEvent = useTrackEvent();
-  
   useEffect(() => {
     analytics.track('experiment_exposure', {
       experiment_name: featureName,
