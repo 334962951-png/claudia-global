@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { open } from "@tauri-apps/plugin-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -14,10 +16,9 @@ import {
   X,
   Settings2,
 } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Popover } from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -25,22 +26,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { api, type Agent } from "@/lib/api";
-import { type ClaudeModel } from "@/types/models";
-import { cn } from "@/lib/utils";
-import { open } from "@tauri-apps/plugin-dialog";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { StreamMessage } from "./StreamMessage";
-import { ExecutionControlBar } from "./ExecutionControlBar";
-import { ErrorBoundary } from "./ErrorBoundary";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import { AGENT_ICONS } from "@/constants/agentIcons";
-import { HooksEditor } from "./HooksEditor";
-import { logger } from "@/lib/logger";
-import { handleError } from "@/lib/errorHandler";
 import { useTrackEvent, useComponentMetrics, useFeatureAdoptionTracking } from "@/hooks";
+import { api, type Agent } from "@/lib/api";
+import { handleError } from "@/lib/errorHandler";
 import { useI18n } from "@/lib/i18n";
+import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
+import { type ClaudeModel } from "@/types/models";
+
+import { ErrorBoundary } from "./ErrorBoundary";
+import { ExecutionControlBar } from "./ExecutionControlBar";
+import { HooksEditor } from "./HooksEditor";
+import { StreamMessage } from "./StreamMessage";
+
+
+
 
 interface AgentExecutionProps {
   /**

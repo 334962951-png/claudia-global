@@ -1,11 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { logger } from "@/lib/logger";
+
 import {
   handleError,
   handleApiError,
   handleNetworkError,
   handleValidationError,
 } from "@/lib/errorHandler";
+import { logger } from "@/lib/logger";
 
 /**
  * Toast notification function

@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -10,20 +9,23 @@ import {
   Bot,
   StopCircle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect, useCallback } from "react";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover } from "@/components/ui/popover";
-import { api, type AgentRunWithMetrics } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { formatISOTimestamp } from "@/lib/date-utils";
-import { StreamMessage } from "./StreamMessage";
 import { AGENT_ICONS } from "@/constants/agentIcons";
+import { api, type AgentRunWithMetrics } from "@/lib/api";
+import { formatISOTimestamp } from "@/lib/date-utils";
+import { handleError } from "@/lib/errorHandler";
+import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
+
 import type { ClaudeStreamMessage } from "./AgentExecution";
 import { ErrorBoundary } from "./ErrorBoundary";
-import { logger } from "@/lib/logger";
+import { StreamMessage } from "./StreamMessage";
 
-import { handleError } from "@/lib/errorHandler";
 /**
  * Props interface for the AgentRunView component
  */

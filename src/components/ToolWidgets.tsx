@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import { open } from "@tauri-apps/plugin-shell";
+import * as Diff from "diff";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2,
   Circle,
@@ -48,22 +50,21 @@ import {
   Activity,
   Hash,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { getClaudeSyntaxTheme } from "@/lib/claudeSyntaxTheme";
-import { useTheme } from "@/hooks";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import * as Diff from "diff";
-import { Card, CardContent } from "@/components/ui/card";
-import { detectLinks, makeLinksClickable } from "@/lib/linkDetector";
 import ReactMarkdown from "react-markdown";
-import { open } from "@tauri-apps/plugin-shell";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { motion, AnimatePresence } from "framer-motion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTheme } from "@/hooks";
+import { getClaudeSyntaxTheme } from "@/lib/claudeSyntaxTheme";
+import { detectLinks, makeLinksClickable } from "@/lib/linkDetector";
 import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 
 // Type definitions for tool results
 interface ToolResult {

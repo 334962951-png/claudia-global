@@ -1,27 +1,27 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Maximize2, Minimize2, Copy, RefreshCw, RotateCcw, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Toast, ToastContainer } from "@/components/ui/toast";
 import { Popover } from "@/components/ui/popover";
+import { Toast, ToastContainer } from "@/components/ui/toast";
 import { api } from "@/lib/api";
-import { useOutputCache } from "@/lib/outputCacheHook";
 import type { AgentRun } from "@/lib/api";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { StreamMessage } from "./StreamMessage";
-import { ErrorBoundary } from "./ErrorBoundary";
 import { logger } from "@/lib/logger";
+import { useOutputCache } from "@/lib/outputCacheHook";
+
+import type { ClaudeStreamMessage } from "./AgentExecution";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { StreamMessage } from "./StreamMessage";
 
 interface SessionOutputViewerProps {
   session: AgentRun;
   onClose: () => void;
   className?: string;
 }
-
-// Import the ClaudeStreamMessage interface from AgentExecution for consistency
-import type { ClaudeStreamMessage } from "./AgentExecution";
 
 /**
  * SessionOutputViewer component for displaying agent session output

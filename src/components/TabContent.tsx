@@ -1,15 +1,17 @@
-import React, { Suspense, lazy, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTabState } from '@/hooks/useTabState';
-import { useScreenTracking } from '@/hooks/useAnalytics';
-import type { Tab } from '@/contexts/contexts';
-import type { Agent } from '@/lib/api';
 import { Loader2, Plus } from 'lucide-react';
-import { api, type Project, type Session, type ClaudeMdFile } from '@/lib/api';
+import React, { Suspense, lazy, useEffect } from 'react';
+
 import { ProjectList } from '@/components/ProjectList';
-import { SessionList } from '@/components/SessionList';
 import { RunningClaudeSessions } from '@/components/RunningClaudeSessions';
+import { SessionList } from '@/components/SessionList';
 import { Button } from '@/components/ui/button';
+import type { Tab } from '@/contexts/contexts';
+import { useScreenTracking } from '@/hooks/useAnalytics';
+import { useTabState } from '@/hooks/useTabState';
+import type { Agent } from '@/lib/api';
+import { api, type Project, type Session, type ClaudeMdFile } from '@/lib/api';
+import { handleError } from "@/lib/errorHandler";
 import { useI18n } from '@/lib/i18n';
 import { logger } from '@/lib/logger';
 
@@ -23,7 +25,6 @@ const MCPManager = lazy(() => import('@/components/MCPManager').then(m => ({ def
 const Settings = lazy(() => import('@/components/Settings').then(m => ({ default: m.Settings })));
 const MarkdownEditor = lazy(() => import('@/components/MarkdownEditor').then(m => ({ default: m.MarkdownEditor })));
 
-import { handleError } from "@/lib/errorHandler";
 // Import non-lazy components for projects view
 
 /**

@@ -1,8 +1,9 @@
-import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Clock, Sparkles, Zap } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from "react";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type ClaudeModel } from "@/types/models";
 

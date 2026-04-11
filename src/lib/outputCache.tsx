@@ -1,14 +1,15 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { api } from "./api";
-import { logger } from "@/lib/logger";
 
 import { handleError } from "@/lib/errorHandler";
+import { logger } from "@/lib/logger";
+
+import { api } from "./api";
+import { OutputCacheContext } from "./outputCacheHook";
 import {
   ClaudeStreamMessage,
   CachedSessionOutput,
   OutputCacheContextType,
 } from "./outputCacheUtils";
-import { OutputCacheContext } from "./outputCacheHook";
 
 /**
  * Props for the OutputCacheProvider component

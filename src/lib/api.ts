@@ -1,15 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
-import { logger } from "@/lib/logger";
-import { handleApiError } from "@/lib/errorHandler";
 
-/**
- * @fileoverview API layer for communicating with the Tauri backend
- * Provides type-safe interfaces for all backend operations including
- * project management, agent execution, and Claude Code integration.
- */
-import { getApiModel, type ClaudeModel } from "@/types/models";
-import type { HooksConfiguration } from "@/types/hooks";
+import { handleApiError } from "@/lib/errorHandler";
 import { HooksManager } from "@/lib/hooksManager";
+import { logger } from "@/lib/logger";
+import type { HooksConfiguration } from "@/types/hooks";
+import { getApiModel, type ClaudeModel } from "@/types/models";
 
 /** Process type for tracking in ProcessRegistry */
 export type ProcessType =

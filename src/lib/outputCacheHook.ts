@@ -2,9 +2,10 @@
  * Output cache hook separated to avoid fast refresh warnings
  */
 import { useContext } from "react";
+import React from "react";
+
 import { OutputCacheContextType, createOutputCacheError } from "./outputCacheUtils";
 
-import React from "react";
 
 /**
  * React context for output cache functionality

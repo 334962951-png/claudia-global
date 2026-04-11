@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+
 import { eventBuilders, analytics } from '@/lib/analytics';
 
 interface PerformanceThresholds {

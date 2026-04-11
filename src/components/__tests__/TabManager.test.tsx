@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import { TabManager } from "../TabManager";
 
 // Mock framer-motion — Reorder.Item renders its children; Reorder.Group renders its children

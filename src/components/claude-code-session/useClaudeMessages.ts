@@ -1,7 +1,9 @@
-import { useState, useCallback, useRef, useEffect } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { useState, useCallback, useRef, useEffect } from "react";
+
 import { api } from "@/lib/api";
 import { logger } from "@/lib/logger";
+
 import type { ClaudeStreamMessage } from "../AgentExecution";
 
 /**

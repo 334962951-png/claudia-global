@@ -1,5 +1,6 @@
-import React, { useState } from "react";
 import { FolderOpen, Folder, FileCode, FileText, Terminal, ChevronRight } from "lucide-react";
+import React, { useState } from "react";
+
 import { cn } from "@/lib/utils";
 
 /**

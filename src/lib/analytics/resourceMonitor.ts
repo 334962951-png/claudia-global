@@ -1,4 +1,5 @@
 import { analytics, eventBuilders } from '@/lib/analytics';
+
 import type { ResourceUsageProperties } from './types';
 
 /**

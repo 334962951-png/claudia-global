@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { Settings } from "../Settings";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import { I18nProvider } from "../I18nProvider";
+import { Settings } from "../Settings";
 
 // Mock the API module
 vi.mock("@/lib/api", () => ({

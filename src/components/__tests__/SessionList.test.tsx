@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { SessionList } from "../SessionList";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import { I18nProvider } from "../I18nProvider";
+import { SessionList } from "../SessionList";
 
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
@@ -37,29 +38,6 @@ vi.mock("lucide-react", () => ({
 vi.mock("@/components/ClaudeMemoriesDropdown", () => ({
   ClaudeMemoriesDropdown: () => <div data-testid="claude-memories">Memories</div>,
 }));
-
-// Provide minimal i18n translations
-const mockTranslations = {
-  language: "en" as const,
-  setLanguage: vi.fn(),
-  isRTL: false,
-  t: {
-    common: {
-      cancel: "Cancel",
-      delete: "Delete",
-      save: "Save",
-    },
-    sessions: {
-      deleteSessionConfirm: "Delete this session?",
-      deleteSessionDesc: (sessionId: string) => `Are you sure you want to delete session ${sessionId}?`,
-      deletingSession: "Deleting...",
-      sessionName: "Session",
-    },
-    time: {
-      yesterday: "Yesterday",
-    },
-  },
-};
 
 const mockSession = {
   id: "session-abc123",

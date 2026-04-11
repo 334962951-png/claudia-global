@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Network, Plus, Download, AlertCircle, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Toast, ToastContainer } from "@/components/ui/toast";
 import { api, type MCPServer } from "@/lib/api";
-import { MCPServerList } from "./MCPServerList";
-import { MCPAddServer } from "./MCPAddServer";
-import { MCPImportExport } from "./MCPImportExport";
+import { handleError } from "@/lib/errorHandler";
 import { useI18n } from "@/lib/i18n";
 import { logger } from "@/lib/logger";
 
-import { handleError } from "@/lib/errorHandler";
+import { MCPAddServer } from "./MCPAddServer";
+import { MCPImportExport } from "./MCPImportExport";
+import { MCPServerList } from "./MCPServerList";
 interface MCPManagerProps {
   /**
    * Callback to go back to the main view

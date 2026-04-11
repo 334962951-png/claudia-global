@@ -1,8 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@/lib/api";
 import {
   X,
   Command,
@@ -16,10 +12,15 @@ import {
   User,
   Building2,
 } from "lucide-react";
-import type { SlashCommand } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { logger } from "@/lib/logger";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTrackEvent, useFeatureAdoptionTracking } from "@/hooks";
+import { api } from "@/lib/api";
+import type { SlashCommand } from "@/lib/api";
+import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 
 interface SlashCommandPickerProps {
   /**

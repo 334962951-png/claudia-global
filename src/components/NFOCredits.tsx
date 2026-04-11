@@ -1,13 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Volume2, VolumeX, Github } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { openUrl } from "@tauri-apps/plugin-opener";
-import { useI18n } from "@/lib/i18n";
+import React, { useEffect, useRef, useState } from "react";
+
 import asteriskLogo from "@/assets/nfo/asterisk-logo.png";
 import keygennMusic from "@/assets/nfo/claudia-nfo.ogg";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
 interface NFOCreditsProps {
   /**
    * Callback when the NFO window is closed

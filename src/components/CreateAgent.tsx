@@ -1,17 +1,20 @@
-import React, { useState } from "react";
+import MDEditor from "@uiw/react-md-editor";
 import { motion } from "framer-motion";
 import { ArrowLeft, Save, Loader2, ChevronDown } from "lucide-react";
+import React, { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Toast, ToastContainer } from "@/components/ui/toast";
-import { api, type Agent } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import MDEditor from "@uiw/react-md-editor";
-import { IconPicker } from "./IconPicker";
 import { AGENT_ICONS } from "@/constants/agentIcons";
-import { useI18n } from "@/lib/i18n";
+import { api, type Agent } from "@/lib/api";
 import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+
+import { IconPicker } from "./IconPicker";
+
 /**
  * Props interface for the CreateAgent component
  */

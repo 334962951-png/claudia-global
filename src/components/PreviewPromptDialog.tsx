@@ -1,6 +1,7 @@
-import React from "react";
 import { motion } from "framer-motion";
 import { Globe, ExternalLink } from "lucide-react";
+import React from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

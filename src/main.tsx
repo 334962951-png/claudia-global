@@ -1,13 +1,14 @@
+import { PostHogProvider } from "posthog-js/react";
 import React from "react";
 import ReactDOM from "react-dom/client";
+
 import App from "./App";
+import { AnalyticsErrorBoundary } from "./components/AnalyticsErrorBoundary";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { I18nProvider } from "./components/I18nProvider";
-import { AnalyticsErrorBoundary } from "./components/AnalyticsErrorBoundary";
-import { replaceConsole } from "./lib/logger";
-import { fontScaleManager } from "./lib/fontScale";
 import { analytics, resourceMonitor } from "./lib/analytics";
-import { PostHogProvider } from "posthog-js/react";
+import { fontScaleManager } from "./lib/fontScale";
+import { replaceConsole } from "./lib/logger";
 import "./assets/shimmer.css";
 import "./styles.css";
 

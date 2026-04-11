@@ -1,10 +1,10 @@
-import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FileText, ArrowLeft, Calendar, Clock, MessageSquare, Trash2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Pagination } from "@/components/ui/pagination";
+import React, { useState } from "react";
+
 import { ClaudeMemoriesDropdown } from "@/components/ClaudeMemoriesDropdown";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { Pagination } from "@/components/ui/pagination";
+import type { Session, ClaudeMdFile } from "@/lib/api";
 import {
   formatUnixTimestamp,
   formatISOTimestamp,
@@ -21,7 +22,7 @@ import {
   getFirstLine,
 } from "@/lib/date-utils";
 import { useI18n } from "@/lib/i18n";
-import type { Session, ClaudeMdFile } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 interface SessionListProps {
   /**

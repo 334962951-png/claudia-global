@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { open } from "@tauri-apps/plugin-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -13,21 +15,9 @@ import {
   Hash,
   Command,
 } from "lucide-react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Popover } from "@/components/ui/popover";
-import { api, type Session } from "@/lib/api";
-import { type ClaudeModel } from "@/types/models";
-import { cn } from "@/lib/utils";
-import { open } from "@tauri-apps/plugin-dialog";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { StreamMessage } from "./StreamMessage";
-import { FloatingPromptInput, type FloatingPromptInputRef } from "./FloatingPromptInput";
-import { ErrorBoundary } from "./ErrorBoundary";
-import { TimelineNavigator } from "./TimelineNavigator";
-import { CheckpointSettings } from "./CheckpointSettings";
-import { SlashCommandsManager } from "./SlashCommandsManager";
 import {
   Dialog,
   DialogContent,
@@ -36,16 +26,30 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover } from "@/components/ui/popover";
 import { SplitPane } from "@/components/ui/split-pane";
-import { WebviewPreview } from "./WebviewPreview";
-import type { ClaudeStreamMessage } from "./AgentExecution";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTrackEvent, useComponentMetrics, useWorkflowTracking } from "@/hooks";
+import { api, type Session } from "@/lib/api";
+import { audioNotificationManager } from "@/lib/audioNotification";
+import { handleError, handleApiError, handleValidationError } from "@/lib/errorHandler";
 import { useI18n } from "@/lib/i18n";
 import { logger } from "@/lib/logger";
-import { handleError, handleApiError, handleValidationError } from "@/lib/errorHandler";
-import { audioNotificationManager } from "@/lib/audioNotification";
-import { useTrackEvent, useComponentMetrics, useWorkflowTracking } from "@/hooks";
+import { cn } from "@/lib/utils";
+import { type ClaudeModel } from "@/types/models";
+
+import type { ClaudeStreamMessage } from "./AgentExecution";
+import { CheckpointSettings } from "./CheckpointSettings";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { FloatingPromptInput, type FloatingPromptInputRef } from "./FloatingPromptInput";
+import { SlashCommandsManager } from "./SlashCommandsManager";
+import { StreamMessage } from "./StreamMessage";
+import { TimelineNavigator } from "./TimelineNavigator";
+import { WebviewPreview } from "./WebviewPreview";
+
+
 
 interface ClaudeCodeSessionProps {
   /**
@@ -1004,7 +1008,7 @@ export const ClaudeCodeSession: React.FC<ClaudeCodeSessionProps> = ({
 
         trackEvent.enhancedPromptSubmitted({
           prompt_length: prompt.length,
-          model: model,
+          model,
           has_attachments: false, // TODO: Add attachment support when implemented
           source: 'keyboard', // TODO: Track actual source (keyboard vs button)
           word_count: wordCount,

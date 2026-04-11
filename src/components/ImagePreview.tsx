@@ -1,9 +1,11 @@
-import React, { useState } from "react";
-import { X, Maximize2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { motion, AnimatePresence } from "framer-motion";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Maximize2 } from "lucide-react";
+import React, { useState } from "react";
+
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+
 
 interface ImagePreviewProps {
   /**

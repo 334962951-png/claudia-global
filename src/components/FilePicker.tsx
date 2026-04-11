@@ -1,7 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { api } from "@/lib/api";
 import {
   X,
   Folder,
@@ -13,11 +10,15 @@ import {
   Search,
   ChevronRight,
 } from "lucide-react";
-import type { FileEntry } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { logger } from "@/lib/logger";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
+import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
+import type { FileEntry } from "@/lib/api";
 import { handleError } from "@/lib/errorHandler";
+import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
+
 // Global caches that persist across component instances
 const globalDirectoryCache = new Map<string, FileEntry[]>();
 const globalSearchCache = new Map<string, FileEntry[]>();

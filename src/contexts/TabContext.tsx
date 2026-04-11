@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { generateTabId, MAX_TABS } from "./tabUtils";
+
 import { Tab, TabContext } from "./contexts";
+import { generateTabId, MAX_TABS } from "./tabUtils";
 
 interface TabContextType {
   tabs: Tab[];

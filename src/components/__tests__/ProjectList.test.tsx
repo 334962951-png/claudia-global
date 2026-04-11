@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { ProjectList } from "../ProjectList";
+import { describe, it, expect, vi } from "vitest";
+
 import { I18nProvider } from "../I18nProvider";
+import { ProjectList } from "../ProjectList";
 
 // Mock framer-motion
 vi.mock("framer-motion", () => ({

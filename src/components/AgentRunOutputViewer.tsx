@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Maximize2,
@@ -12,21 +12,26 @@ import {
   DollarSign,
   StopCircle,
 } from "lucide-react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Toast, ToastContainer } from "@/components/ui/toast";
 import { Popover } from "@/components/ui/popover";
+import { Toast, ToastContainer } from "@/components/ui/toast";
 import { AGENT_ICONS } from "@/constants/agentIcons";
-import { api, type AgentRunWithMetrics } from "@/lib/api";
-import { useOutputCache } from "@/lib/outputCacheHook";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { StreamMessage } from "./StreamMessage";
-import { ErrorBoundary } from "./ErrorBoundary";
-import { formatISOTimestamp } from "@/lib/date-utils";
-import type { ClaudeStreamMessage } from "./AgentExecution";
 import { useTabState } from "@/hooks/useTabState";
+import { api, type AgentRunWithMetrics } from "@/lib/api";
+import { formatISOTimestamp } from "@/lib/date-utils";
 import { logger } from "@/lib/logger";
+import { useOutputCache } from "@/lib/outputCacheHook";
+
+import type { ClaudeStreamMessage } from "./AgentExecution";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { StreamMessage } from "./StreamMessage";
+
+
+
 
 interface AgentRunOutputViewerProps {
   /**

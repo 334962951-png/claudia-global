@@ -1,21 +1,22 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Maximize2, Minimize2, ChevronUp, Sparkles, Zap, Square, Brain } from "lucide-react";
-import { cn } from "@/lib/utils";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Popover } from "@/components/ui/popover";
 import { ResizableTextarea } from "@/components/ui/resizable-textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { FilePicker } from "./FilePicker";
-import { SlashCommandPicker } from "./SlashCommandPicker";
-import { ImagePreview } from "./ImagePreview";
-import { useI18n } from "@/lib/i18n";
 import { type FileEntry, type SlashCommand } from "@/lib/api";
-import { type ClaudeModel } from "@/types/models";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { logger } from "@/lib/logger";
-
 import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
+import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
+import { type ClaudeModel } from "@/types/models";
+
+import { FilePicker } from "./FilePicker";
+import { ImagePreview } from "./ImagePreview";
+import { SlashCommandPicker } from "./SlashCommandPicker";
 /**
  * Props interface for the FloatingPromptInput component
  */

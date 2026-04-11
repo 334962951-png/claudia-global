@@ -10,7 +10,7 @@ import { ThemeMode } from '@/contexts/ThemeContext';
  * @param theme - The current theme mode
  * @returns Prism syntax highlighting theme object
  */
-export const getClaudeSyntaxTheme = (theme: ThemeMode): { [key: string]: React.CSSProperties } => {
+export const getClaudeSyntaxTheme = (_theme: ThemeMode): { [key: string]: React.CSSProperties } => {
   // CSS variables are theme-aware and defined per theme variant in styles.css
   const base = 'var(--color-foreground)';
   const background = 'transparent';

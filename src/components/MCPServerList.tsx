@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Network,
@@ -16,13 +15,15 @@ import {
   ChevronUp,
   Copy,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useTrackEvent } from "@/hooks";
 import { api, type MCPServer } from "@/lib/api";
+import { handleError } from "@/lib/errorHandler";
 import { useI18n } from "@/lib/i18n";
 import { logger } from "@/lib/logger";
-import { useTrackEvent } from "@/hooks";
-import { handleError } from "@/lib/errorHandler";
 interface MCPServerListProps {
   /**
    * List of MCP servers to display

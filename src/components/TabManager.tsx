@@ -1,11 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { X, Plus, MessageSquare, Bot, AlertCircle, Loader2, Folder, BarChart, Server, Settings, FileText } from 'lucide-react';
-import { useTabState } from '@/hooks/useTabState';
+import React, { useState, useRef, useEffect } from 'react';
+
 import { Tab } from '@/contexts/contexts';
 import { useTabContext } from '@/hooks';
-import { cn } from '@/lib/utils';
 import { useTrackEvent } from '@/hooks';
+import { useTabState } from '@/hooks/useTabState';
+import { cn } from '@/lib/utils';
 
 interface TabItemProps {
   tab: Tab;

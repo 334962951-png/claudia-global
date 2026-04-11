@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { subscribeWithSelector } from 'zustand/middleware';
 import type { StateCreator } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
+
 import { api } from '@/lib/api';
-import { handleApiError } from "@/lib/errorHandler";
 import type { Session, Project } from '@/lib/api';
+import { handleApiError } from "@/lib/errorHandler";
 
 /**
  * Session store state interface

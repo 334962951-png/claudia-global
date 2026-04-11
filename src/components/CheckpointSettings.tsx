@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Settings, Save, Trash2, HardDrive, AlertCircle } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { SelectComponent, type SelectOption } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { SelectComponent, type SelectOption } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { api, type CheckpointStrategy } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { useI18n } from "@/lib/i18n";
 import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 /**
  * Props interface for the CheckpointSettings component
  */

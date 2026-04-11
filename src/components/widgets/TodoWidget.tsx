@@ -1,5 +1,6 @@
-import React from "react";
 import { CheckCircle2, Circle, Clock, FileEdit } from "lucide-react";
+import React from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 

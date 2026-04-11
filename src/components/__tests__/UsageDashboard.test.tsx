@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { UsageDashboard } from "../UsageDashboard";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import { I18nProvider } from "../I18nProvider";
+import { UsageDashboard } from "../UsageDashboard";
 
 // ── framer-motion ─────────────────────────────────────────────────────────────
 vi.mock("framer-motion", () => ({

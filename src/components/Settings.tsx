@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -11,13 +10,18 @@ import {
   Shield,
   Trash,
 } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Toast, ToastContainer } from "@/components/ui/toast";
+import { useTheme, useTrackEvent } from "@/hooks";
+import { analytics } from "@/lib/analytics";
 import {
   api,
   type ClaudeSettings,
@@ -25,19 +29,6 @@ import {
   type EnvironmentVariable as DbEnvironmentVariable,
   type EnvironmentVariableGroup
 } from "@/lib/api";
-import { useI18n } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
-import { Toast, ToastContainer } from "@/components/ui/toast";
-import { ClaudeVersionSelector } from "./ClaudeVersionSelector";
-import { StorageTab } from "./StorageTab";
-import { HooksEditor } from "./HooksEditor";
-import { SlashCommandsManager } from "./SlashCommandsManager";
-import { ProxySettings } from "./ProxySettings";
-import { AnalyticsConsent } from "./AnalyticsConsent";
-import { useTheme, useTrackEvent } from "@/hooks";
-import { analytics } from "@/lib/analytics";
-import { logger } from "@/lib/logger";
-import { handleError, handleApiError } from "@/lib/errorHandler";
 import {
   audioNotificationManager,
   loadAudioConfigFromLocalStorage,
@@ -46,7 +37,19 @@ import {
   type AudioNotificationConfig,
   type AudioNotificationMode
 } from "@/lib/audioNotification";
+import { handleError, handleApiError } from "@/lib/errorHandler";
 import { fontScaleManager, FONT_SCALE_OPTIONS, type FontScale } from "@/lib/fontScale";
+import { useI18n } from "@/lib/i18n";
+import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
+
+import { AnalyticsConsent } from "./AnalyticsConsent";
+import { ClaudeVersionSelector } from "./ClaudeVersionSelector";
+import { HooksEditor } from "./HooksEditor";
+import { ProxySettings } from "./ProxySettings";
+import { SlashCommandsManager } from "./SlashCommandsManager";
+import { StorageTab } from "./StorageTab";
+
 interface SettingsProps {
   /**
    * Callback to go back to the main view

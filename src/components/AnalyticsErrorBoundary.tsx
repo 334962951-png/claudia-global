@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+
 import { eventBuilders, analytics } from '@/lib/analytics';
 
 interface Props {

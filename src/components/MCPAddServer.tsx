@@ -1,15 +1,16 @@
-import React, { useState } from "react";
 import { Plus, Terminal, Globe, Trash2, Info, Loader2 } from "lucide-react";
+import React, { useState } from "react";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SelectComponent } from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
-import { api } from "@/lib/api";
-import { useI18n } from "@/lib/i18n";
-import { handleError } from "@/lib/errorHandler";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useTrackEvent } from "@/hooks";
+import { api } from "@/lib/api";
+import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
 interface MCPAddServerProps {
   /**
    * Callback when a server is successfully added

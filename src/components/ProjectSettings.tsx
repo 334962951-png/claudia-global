@@ -2,10 +2,6 @@
  * ProjectSettings component for managing project-specific hooks configuration
  */
 
-import React, { useState, useEffect, useCallback } from "react";
-import { HooksEditor } from "@/components/HooksEditor";
-import { SlashCommandsManager } from "@/components/SlashCommandsManager";
-import { api } from "@/lib/api";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -15,13 +11,18 @@ import {
   Shield,
   Command,
 } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+
+import { HooksEditor } from "@/components/HooksEditor";
+import { SlashCommandsManager } from "@/components/SlashCommandsManager";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 import { Toast, ToastContainer } from "@/components/ui/toast";
+import { api } from "@/lib/api";
 import type { Project } from "@/lib/api";
 import { handleError } from "@/lib/errorHandler";
+import { cn } from "@/lib/utils";
 /**
  * Props interface for the ProjectSettings component
  */

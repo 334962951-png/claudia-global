@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Play, Loader2, Terminal, AlertCircle } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { api, type ProcessInfo, type Session } from "@/lib/api";
-import { cn } from "@/lib/utils";
 import { formatISOTimestamp } from "@/lib/date-utils";
 import { handleError } from "@/lib/errorHandler";
+import { cn } from "@/lib/utils";
 /**
  * Props interface for the RunningClaudeSessions component
  */

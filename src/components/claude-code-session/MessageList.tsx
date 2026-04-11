@@ -1,10 +1,12 @@
-import React, { useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { StreamMessage } from "../StreamMessage";
+import { motion, AnimatePresence } from "framer-motion";
 import { Terminal } from "lucide-react";
+import React, { useRef, useEffect } from "react";
+
 import { cn } from "@/lib/utils";
+
 import type { ClaudeStreamMessage } from "../AgentExecution";
+import { StreamMessage } from "../StreamMessage";
 
 /**
  * Props interface for the MessageList component

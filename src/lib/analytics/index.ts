@@ -1,4 +1,5 @@
 import posthog from 'posthog-js';
+
 import { ConsentManager } from './consent';
 import { sanitizers } from './events';
 import type { 

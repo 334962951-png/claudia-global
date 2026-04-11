@@ -1,5 +1,10 @@
+import { CheckCircle, HardDrive, Settings, RefreshCw } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -7,15 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { api, type ClaudeInstallation } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { CheckCircle, HardDrive, Settings, RefreshCw } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
 import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
 import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 
 /**
  * Props interface for the ClaudeVersionSelector component

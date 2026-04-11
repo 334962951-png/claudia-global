@@ -1,6 +1,7 @@
-import React from "react";
 import { motion } from "framer-motion";
 import { Hash } from "lucide-react";
+import React from "react";
+
 import { cn } from "@/lib/utils";
 
 interface TokenCounterProps {

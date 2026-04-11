@@ -1,7 +1,8 @@
+import { Type, Minus, Plus } from 'lucide-react';
 import React from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Type, Minus, Plus } from 'lucide-react';
 import { FONT_SCALE_OPTIONS, useFontScale, type FontScale } from '@/lib/fontScale';
 import { useI18n } from '@/lib/i18n';
 

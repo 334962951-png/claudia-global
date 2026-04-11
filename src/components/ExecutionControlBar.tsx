@@ -1,6 +1,7 @@
-import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { StopCircle, Clock, Hash } from "lucide-react";
+import React from "react";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 

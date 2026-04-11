@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useCallback } from "react";
 import MDEditor from "@uiw/react-md-editor";
 import { motion } from "framer-motion";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Toast, ToastContainer } from "@/components/ui/toast";
 import { api, type ClaudeMdFile } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { useI18n } from "@/lib/i18n";
 import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 interface ClaudeFileEditorProps {
   /**
    * The CLAUDE.md file to edit

@@ -3,11 +3,13 @@
  * 提供全局Toast通知管理
  */
 
-import React, { useState, useCallback, ReactNode } from "react";
-import { Toast, ToastContainer } from "@/components/ui/toast";
 import { AnimatePresence } from "framer-motion";
-import { generateToastId } from "./toastUtils";
+import React, { useState, useCallback, ReactNode } from "react";
+
+import { Toast, ToastContainer } from "@/components/ui/toast";
+
 import { ToastContext, type ToastType, type ToastItem } from "./contexts";
+import { generateToastId } from "./toastUtils";
 
 /**
  * Type definition for toast context value

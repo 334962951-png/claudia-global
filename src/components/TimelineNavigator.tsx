@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 import {
   GitBranch,
@@ -12,10 +12,11 @@ import {
   FileCode,
   Diff,
 } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTrackEvent } from "@/hooks";
 import {
   api,
   type Checkpoint,
@@ -33,11 +36,9 @@ import {
   type SessionTimeline,
   type CheckpointDiff,
 } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
-import { useI18n } from "@/lib/i18n";
 import { handleError } from "@/lib/errorHandler";
-import { useTrackEvent } from "@/hooks";
+import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 /**
  * Props interface for the TimelineNavigator component

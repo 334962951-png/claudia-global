@@ -1,4 +1,3 @@
-import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -12,11 +11,13 @@ import {
   Globe,
   Home,
 } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 
 /**
  * Props interface for the WebviewPreview component

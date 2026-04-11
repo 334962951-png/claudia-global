@@ -1,14 +1,15 @@
-import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Clock, Hash, Bot } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
-import { cn } from "@/lib/utils";
-import { formatISOTimestamp } from "@/lib/date-utils";
-import type { AgentRunWithMetrics } from "@/lib/api";
 import { AGENT_ICONS } from "@/constants/agentIcons";
 import { useTabState } from "@/hooks/useTabState";
+import type { AgentRunWithMetrics } from "@/lib/api";
+import { formatISOTimestamp } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
 
 interface AgentRunsListProps {
   /**

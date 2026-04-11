@@ -1,10 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { api, type UsageStats, type ProjectUsage } from "@/lib/api";
 import {
   ArrowLeft,
   TrendingUp,
@@ -16,10 +10,17 @@ import {
   FileText,
   Briefcase,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useI18n } from "@/lib/i18n";
-import { handleError } from "@/lib/errorHandler";
+import React, { useState, useEffect, useCallback } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { api, type UsageStats, type ProjectUsage } from "@/lib/api";
 import { formatUnixTimestamp } from "@/lib/date-utils";
+import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 /**
  * Props interface for the UsageDashboard component
  */

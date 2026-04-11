@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from "react";
 import { Terminal, User, Bot, AlertCircle, CheckCircle2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { getClaudeSyntaxTheme } from "@/lib/claudeSyntaxTheme";
+import remarkGfm from "remark-gfm";
+
+import { Card, CardContent } from "@/components/ui/card";
 import { useTheme } from "@/hooks";
+import { getClaudeSyntaxTheme } from "@/lib/claudeSyntaxTheme";
+import { handleError } from "@/lib/errorHandler";
+import { cn } from "@/lib/utils";
+
+
 import type { ClaudeStreamMessage } from "./AgentExecution";
 import {
   TodoWidget,
@@ -34,7 +38,7 @@ import {
   WebSearchWidget,
   WebFetchWidget,
 } from "./ToolWidgets";
-import { handleError } from "@/lib/errorHandler";
+
 /**
  * Props interface for the StreamMessage component
  */

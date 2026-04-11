@@ -1,20 +1,21 @@
-import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FolderOpen, Calendar, FileText, ChevronRight, Settings, MoreVertical } from "lucide-react";
+import React, { useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Pagination } from "@/components/ui/pagination";
 import type { Project } from "@/lib/api";
+import { formatTimeAgo } from "@/lib/date-utils";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { formatTimeAgo } from "@/lib/date-utils";
-import { Pagination } from "@/components/ui/pagination";
 
 interface ProjectListProps {
   /**

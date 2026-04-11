@@ -1,6 +1,7 @@
-import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react";
+import * as React from "react";
+
 import { cn } from "@/lib/utils";
 
 /**

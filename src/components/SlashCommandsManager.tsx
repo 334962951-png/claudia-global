@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -18,19 +17,11 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
+import React, { useState, useEffect, useCallback } from "react";
+
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -38,12 +29,22 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useTrackEvent } from "@/hooks";
 import { api, type SlashCommand } from "@/lib/api";
+import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { COMMON_TOOL_MATCHERS } from "@/types/hooks";
-import { useI18n } from "@/lib/i18n";
-import { handleError } from "@/lib/errorHandler";
-import { useTrackEvent } from "@/hooks";
 interface SlashCommandsManagerProps {
   projectPath?: string;
   className?: string;

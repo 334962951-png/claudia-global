@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { save, open } from "@tauri-apps/plugin-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -14,15 +15,10 @@ import {
   FileJson,
   ChevronDown,
 } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
+import React, { useState, useEffect, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -31,17 +27,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { api, type Agent, type AgentRunWithMetrics } from "@/lib/api";
-import { save, open } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
-import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Toast, ToastContainer } from "@/components/ui/toast";
-import { CreateAgent } from "./CreateAgent";
+import { AGENT_ICONS } from "@/constants/agentIcons";
+import { api, type Agent, type AgentRunWithMetrics } from "@/lib/api";
+import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+
 import { AgentExecution } from "./AgentExecution";
 import { AgentRunsList } from "./AgentRunsList";
+import { CreateAgent } from "./CreateAgent";
 import { GitHubAgentBrowser } from "./GitHubAgentBrowser";
-import { AGENT_ICONS } from "@/constants/agentIcons";
-import { handleError } from "@/lib/errorHandler";
+
 interface CCAgentsProps {
   /**
    * Callback to go back to the main view

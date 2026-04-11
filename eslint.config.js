@@ -4,6 +4,8 @@ import typescriptParser from "@typescript-eslint/parser";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import importPlugin from "eslint-plugin-import";
+import unusedImports from "eslint-plugin-unused-imports";
 
 export default [
   // Base configuration for all files
@@ -84,6 +86,8 @@ export default [
       react: react,
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
+      import: importPlugin,
+      "unused-imports": unusedImports,
     },
     rules: {
       // ESLint recommended rules
@@ -122,6 +126,29 @@ export default [
       "no-var": "error",
       "object-shorthand": "error",
       "prefer-template": "error",
+
+      // Import ordering: React → external libs → internal libs → components → utils → types
+      "import/order": [
+        "error",
+        {
+          groups: [
+            "builtin",
+            "external",
+            "internal",
+          ],
+          pathGroups: [
+            { pattern: "react", group: "external", position: "before" },
+            { pattern: "react-*", group: "external" },
+            { pattern: "@react-*", group: "external" },
+            { pattern: "@/**", group: "internal", position: "after" },
+          ],
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true },
+        },
+      ],
+
+      // Remove unused imports automatically
+      "unused-imports/no-unused-imports": "error",
     },
     settings: {
       react: {

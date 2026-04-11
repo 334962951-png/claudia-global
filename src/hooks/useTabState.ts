@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
-import { useTabContext } from "@/contexts/hooks";
+
 import { Tab } from "@/contexts/contexts";
+import { useTabContext } from "@/contexts/hooks";
 
 /**
  * Return type for the useTabState hook

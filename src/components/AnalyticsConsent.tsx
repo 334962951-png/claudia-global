@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart3, Shield, X, Check, Info } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useState, useEffect } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { analytics } from '@/lib/analytics';
-import { cn } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 
 interface AnalyticsConsentProps {
   open?: boolean;

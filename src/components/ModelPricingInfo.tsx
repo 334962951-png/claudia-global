@@ -1,13 +1,14 @@
+import { DollarSign, Zap, Clock, Target } from "lucide-react";
 import React from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   getModelPricing,
   formatPrice,
   getModelCostEfficiency,
   MODEL_USE_CASES,
 } from "@/config/pricing";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Zap, Clock, Target } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 interface ModelPricingInfoProps {

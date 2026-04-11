@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -10,15 +9,17 @@ import {
   Hash,
   Command,
 } from "lucide-react";
+import React from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Popover } from "@/components/ui/popover";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+import { Popover } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 /**

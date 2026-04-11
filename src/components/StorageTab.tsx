@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Database,
@@ -16,18 +15,10 @@ import {
   Table,
   Loader2,
 } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
+import React, { useState, useEffect, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -36,11 +27,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { api } from "@/lib/api";
-import { Toast, ToastContainer } from "./ui/toast";
 import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
+
+import { Toast, ToastContainer } from "./ui/toast";
 interface TableInfo {
   name: string;
   row_count: number;

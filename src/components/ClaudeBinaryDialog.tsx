@@ -1,5 +1,6 @@
+import { ExternalLink, FileQuestion, Terminal, AlertCircle, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { api, type ClaudeInstallation } from "@/lib/api";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,10 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ExternalLink, FileQuestion, Terminal, AlertCircle, Loader2 } from "lucide-react";
-import { ClaudeVersionSelector } from "./ClaudeVersionSelector";
-import { useI18n } from "@/lib/i18n";
+import { api, type ClaudeInstallation } from "@/lib/api";
 import { handleError } from "@/lib/errorHandler";
+import { useI18n } from "@/lib/i18n";
+
+import { ClaudeVersionSelector } from "./ClaudeVersionSelector";
 /**
  * Props interface for the ClaudeBinaryDialog component
  */

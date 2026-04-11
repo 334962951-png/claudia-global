@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { open as openDialog, save } from "@tauri-apps/plugin-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bot,
@@ -15,6 +16,11 @@ import {
   Globe,
   Download,
 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+
+import { GitHubAgentBrowser } from "@/components/GitHubAgentBrowser";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -28,20 +34,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Toast } from "@/components/ui/toast";
-import { api, type Agent, type AgentRunWithMetrics } from "@/lib/api";
 import { useTabState } from "@/hooks/useTabState";
+import { api, type Agent, type AgentRunWithMetrics } from "@/lib/api";
 import { formatISOTimestamp } from "@/lib/date-utils";
-import { open as openDialog, save } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
-import { GitHubAgentBrowser } from "@/components/GitHubAgentBrowser";
+import { handleError } from "@/lib/errorHandler";
 import { useI18n } from "@/lib/i18n";
 
-import { handleError } from "@/lib/errorHandler";
 /**
  * Props interface for the AgentsModal component
  */

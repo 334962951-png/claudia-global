@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+
 import { analytics, ANALYTICS_EVENTS, eventBuilders } from '@/lib/analytics';
 import type { EventName } from '@/lib/analytics/types';
 

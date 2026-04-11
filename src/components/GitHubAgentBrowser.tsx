@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { open } from "@tauri-apps/plugin-shell";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Download, Loader2, AlertCircle, Eye, Check, Globe, FileJson } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+
 import { Badge } from "@/components/ui/badge";
-import { api, type GitHubAgentFile, type AgentExport, type Agent } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { AGENT_ICONS } from "@/constants/agentIcons";
-import { open } from "@tauri-apps/plugin-shell";
+import { api, type GitHubAgentFile, type AgentExport, type Agent } from "@/lib/api";
 import { handleError } from "@/lib/errorHandler";
 /**
  * Props interface for the GitHubAgentBrowser component

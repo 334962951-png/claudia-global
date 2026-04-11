@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search } from "lucide-react";
+import React, { useState, useMemo } from "react";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { ICON_CATEGORIES } from "@/constants/iconConstants";
+import { cn } from "@/lib/utils";
 
 type IconCategory = (typeof ICON_CATEGORIES)[keyof typeof ICON_CATEGORIES];
 type IconItem = IconCategory[number];

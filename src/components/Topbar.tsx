@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Circle,
@@ -10,13 +9,15 @@ import {
   Info,
   Bot,
 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { Button } from "@/components/ui/button";
 import { Popover } from "@/components/ui/popover";
-import { LanguageSelector } from "@/components/LanguageSelector";
 import { api, type ClaudeVersionStatus } from "@/lib/api";
+import { handleError } from "@/lib/errorHandler";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { handleError } from "@/lib/errorHandler";
 /**
  * Props interface for the Topbar component
  */
