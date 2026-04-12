@@ -775,5 +775,168 @@ pub async fn save_app_setting(app: AppHandle, key: String, value: String) -> Res
     Ok(())
 }
 
+// ---------------------------------------------------------------------------
+// Pricing Configuration
+// ---------------------------------------------------------------------------
+
+/// Open pricing system: built-in model price table.
+/// Values match src/config/pricing.ts exactly. Prices are USD per million tokens.
+mod pricing_constants {
+    use serde::Serialize;
+
+    #[derive(Debug, Clone, Serialize)]
+    pub struct ModelPricing {
+        pub input_price: f64,
+        pub output_price: f64,
+        pub cache_write_price: f64,
+        pub cache_read_price: f64,
+    }
+
+    /// Built-in Anthropic model prices (USD / MTok)
+    pub fn anthropic_prices() -> std::collections::HashMap<String, ModelPricing> {
+        let mut m = std::collections::HashMap::new();
+        m.insert(
+            "claude-sonnet-4-6-20250620".into(),
+            ModelPricing { input_price: 3.0, output_price: 15.0, cache_write_price: 3.75, cache_read_price: 0.3 },
+        );
+        m.insert(
+            "claude-opus-4-6-20250620".into(),
+            ModelPricing { input_price: 15.0, output_price: 75.0, cache_write_price: 18.75, cache_read_price: 1.5 },
+        );
+        m.insert(
+            "claude-haiku-4-20251119".into(),
+            ModelPricing { input_price: 0.8, output_price: 4.0, cache_write_price: 1.0, cache_read_price: 0.08 },
+        );
+        m.insert(
+            "claude-sonnet-4-5-20252012".into(),
+            ModelPricing { input_price: 3.0, output_price: 15.0, cache_write_price: 3.75, cache_read_price: 0.3 },
+        );
+        m.insert(
+            "claude-sonnet-4-20250514".into(),
+            ModelPricing { input_price: 3.0, output_price: 15.0, cache_write_price: 3.75, cache_read_price: 0.3 },
+        );
+        m.insert(
+            "claude-opus-4-20250514".into(),
+            ModelPricing { input_price: 15.0, output_price: 75.0, cache_write_price: 18.75, cache_read_price: 1.5 },
+        );
+        m.insert(
+            "claude-3-7-sonnet-20250219".into(),
+            ModelPricing { input_price: 3.0, output_price: 15.0, cache_write_price: 3.75, cache_read_price: 0.3 },
+        );
+        m.insert(
+            "claude-3-5-sonnet-20241022".into(),
+            ModelPricing { input_price: 3.0, output_price: 15.0, cache_write_price: 3.75, cache_read_price: 0.3 },
+        );
+        m.insert(
+            "claude-3-5-haiku-20241022".into(),
+            ModelPricing { input_price: 0.8, output_price: 4.0, cache_write_price: 1.0, cache_read_price: 0.08 },
+        );
+        // Aliases
+        m.insert("sonnet-3-7".into(), m["claude-3-7-sonnet-20250219"].clone());
+        m.insert("sonnet-4".into(), m["claude-sonnet-4-20250514"].clone());
+        m.insert("sonnet".into(), m["claude-sonnet-4-20250514"].clone());
+        m.insert("opus".into(), m["claude-opus-4-20250514"].clone());
+        m.insert("claude-3-7-sonnet-20250219-thinking".into(), m["claude-3-7-sonnet-20250219"].clone());
+        m.insert("claude-sonnet-4-20250514-thinking".into(), m["claude-sonnet-4-20250514"].clone());
+        m.insert("claude-opus-4-20250514-thinking".into(), m["claude-opus-4-20250514"].clone());
+        m
+    }
+
+    /// Built-in OpenRouter model prices (USD / MTok)
+    pub fn openrouter_prices() -> std::collections::HashMap<String, ModelPricing> {
+        let mut m = std::collections::HashMap::new();
+        m.insert(
+            "openai/gpt-4o".into(),
+            ModelPricing { input_price: 5.0, output_price: 15.0, cache_write_price: 0.0, cache_read_price: 0.0 },
+        );
+        m.insert(
+            "openai/gpt-4o-mini".into(),
+            ModelPricing { input_price: 0.15, output_price: 0.6, cache_write_price: 0.0, cache_read_price: 0.0 },
+        );
+        m.insert(
+            "google/gemini-2.0-flash".into(),
+            ModelPricing { input_price: 0.0, output_price: 0.0, cache_write_price: 0.0, cache_read_price: 0.0 },
+        );
+        m.insert(
+            "google/gemini-pro-1.5".into(),
+            ModelPricing { input_price: 0.125, output_price: 0.5, cache_write_price: 0.0, cache_read_price: 0.0 },
+        );
+        m.insert(
+            "deepseek/deepseek-chat-v3-0324".into(),
+            ModelPricing { input_price: 0.27, output_price: 1.1, cache_write_price: 0.0, cache_read_price: 0.0 },
+        );
+        m.insert(
+            "mistral/mistral-nemo".into(),
+            ModelPricing { input_price: 0.15, output_price: 0.15, cache_write_price: 0.0, cache_read_price: 0.0 },
+        );
+        m
+    }
+}
+
+use pricing_constants::{anthropic_prices, openrouter_prices, ModelPricing as RsModelPricing};
+
+/// Pricing provider (mirrors frontend PricingProvider interface)
+#[derive(Debug, serde::Serialize)]
+struct PricingProvider {
+    id: String,
+    name: String,
+    is_custom: bool,
+    models: std::collections::HashMap<String, RsModelPricing>,
+}
+
+/// Combined pricing config returned to the frontend.
+///
+/// Merges built-in providers with any user-defined `custom_pricing_providers`
+/// stored in the `app_settings` table. User-defined models take priority over
+/// built-in ones with the same model ID.
+///
+/// # Frontend Contract
+/// ```typescript
+/// invoke('get_pricing_config'): Promise<{
+///   builtIn: PricingProvider[];
+///   custom: PricingProvider[];
+/// }>
+/// ```
+#[tauri::command]
+pub async fn get_pricing_config(app: AppHandle) -> Result<serde_json::Value, String> {
+    let db_state = app.state::<super::agents::AgentDb>();
+    let conn = db_state.0.lock().map_err(|e| e.to_string())?;
+
+    // 1. Build built-in providers
+    let anthropic_models = anthropic_prices();
+    let openrouter_models = openrouter_prices();
+
+    let built_in = vec![
+        PricingProvider {
+            id: "anthropic".into(),
+            name: "Anthropic (Claude)".into(),
+            is_custom: false,
+            models: anthropic_models,
+        },
+        PricingProvider {
+            id: "openrouter".into(),
+            name: "OpenRouter".into(),
+            is_custom: false,
+            models: openrouter_models,
+        },
+    ];
+
+    // 2. Load user custom providers from app_settings
+    let custom: Vec<PricingProvider> = match conn.query_row(
+        "SELECT value FROM app_settings WHERE key = 'custom_pricing_providers'",
+        [],
+        |row| row.get::<_, String>(0),
+    ) {
+        Ok(json) => serde_json::from_str(&json).unwrap_or_default(),
+        Err(rusqlite::Error::QueryReturnedNoRows) => Vec::new(),
+        Err(e) => return Err(format!("Failed to read custom pricing: {}", e)),
+    };
+
+    Ok(serde_json::json!({
+        "builtIn": built_in,
+        "custom": custom,
+    }))
+}
+
 /// Initialize the agents database (re-exported from agents module)
 use super::agents::init_database; 

@@ -88,6 +88,10 @@ vi.mock("@/lib/api", () => ({
       by_date: [],
       by_project: [],
     }),
+    getPricingConfig: vi.fn().mockResolvedValue({
+      builtIn: [],
+      custom: [],
+    }),
   },
 }));
 

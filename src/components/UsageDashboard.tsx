@@ -21,6 +21,7 @@ import { formatUnixTimestamp } from "@/lib/date-utils";
 import { handleError } from "@/lib/errorHandler";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { getAllProviders, type PricingProvider } from "@/config/pricing";
 /**
  * Props interface for the UsageDashboard component
  */
@@ -53,6 +54,7 @@ export const UsageDashboard: React.FC<UsageDashboardProps> = ({ onBack }) => {
   const [sessionStats, setSessionStats] = useState<ProjectUsage[] | null>(null);
   const [selectedDateRange, setSelectedDateRange] = useState<"all" | "7d" | "30d">("all");
   const [activeTab, setActiveTab] = useState("overview");
+  const [customProviders, setCustomProviders] = useState<PricingProvider[]>([]);
 
   const loadUsageStats = useCallback(async () => {
     try {
@@ -61,39 +63,29 @@ export const UsageDashboard: React.FC<UsageDashboardProps> = ({ onBack }) => {
 
       let statsData: UsageStats;
       let sessionData: ProjectUsage[];
+      let pricingData: { builtIn: PricingProvider[]; custom: PricingProvider[] };
 
-      if (selectedDateRange === "all") {
-        statsData = await api.getUsageStats();
-        sessionData = await api.getSessionStats();
-      } else {
-        const endDate = new Date();
-        const startDate = new Date();
-        const days = selectedDateRange === "7d" ? 7 : 30;
-        startDate.setDate(startDate.getDate() - days);
+      // Compute date range for filtering
+      const now = new Date();
+      const rangeStart = new Date();
+      rangeStart.setDate(now.getDate() - (selectedDateRange === "7d" ? 7 : 30));
 
-        /**
-         * Format date for API request
-         *
-         * @param date - Date to format
-         * @returns Formatted date string
-         */
-        const formatDateForApi = (date: Date) => {
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          return `${year}${month}${day}`;
-        };
+      // Load pricing config (custom providers) in parallel with usage data
+      const [statsResult, sessionResult, pricingResult] = await Promise.allSettled([
+        selectedDateRange === "all"
+          ? api.getUsageStats()
+          : api.getUsageByDateRange(rangeStart.toISOString(), now.toISOString()),
+        api.getSessionStats(),
+        api.getPricingConfig(),
+      ]);
 
-        statsData = await api.getUsageByDateRange(startDate.toISOString(), endDate.toISOString());
-        sessionData = await api.getSessionStats(
-          formatDateForApi(startDate),
-          formatDateForApi(endDate),
-          "desc"
-        );
-      }
+      statsData = statsResult.status === "fulfilled" ? statsResult.value : await api.getUsageStats();
+      sessionData = sessionResult.status === "fulfilled" ? sessionResult.value : await api.getSessionStats();
+      pricingData = pricingResult.status === "fulfilled" ? pricingResult.value : { builtIn: [], custom: [] };
 
       setStats(statsData);
       setSessionStats(sessionData);
+      setCustomProviders(pricingData.custom);
     } catch (err) {
       await handleError("Failed to load usage stats:", { context: err });
       setError(t.usage.failedToLoadUsageStats);
@@ -165,12 +157,22 @@ export const UsageDashboard: React.FC<UsageDashboardProps> = ({ onBack }) => {
   };
 
   /**
-   * Get display name for a model
+   * Get display name for a model using pricing config (built-in + custom providers)
    *
    * @param model - Model identifier
    * @returns Human-readable model name
    */
   const getModelDisplayName = (model: string): string => {
+    const allProviders = getAllProviders(customProviders);
+    for (const provider of allProviders) {
+      if (model in provider.models) {
+        // Show provider name for non-anthropic models
+        if (provider.id !== "anthropic") {
+          return `${provider.name}: ${model}`;
+        }
+      }
+    }
+    // Fallback for unknown or Anthropic models
     const modelMap: Record<string, string> = {
       "claude-4-opus": "Opus 4",
       "claude-opus-4-1-20250805": "Opus 4.1",
@@ -182,14 +184,20 @@ export const UsageDashboard: React.FC<UsageDashboardProps> = ({ onBack }) => {
   };
 
   /**
-   * Get color for a model in charts
+   * Get color for a model in charts based on provider
    *
    * @param model - Model identifier
-   * @returns CSS color class or hex color
+   * @returns CSS color class
    */
   const getModelColor = (model: string): string => {
-    if (model.includes("opus")) return "text-purple-500";
-    if (model.includes("sonnet")) return "text-blue-500";
+    const allProviders = getAllProviders(customProviders);
+    const provider = allProviders.find((p) => model in p.models);
+    if (provider?.id === "anthropic") {
+      if (model.includes("opus")) return "text-purple-500";
+      if (model.includes("sonnet")) return "text-blue-500";
+      if (model.includes("haiku")) return "text-green-500";
+    }
+    if (provider?.id === "openrouter") return "text-orange-500";
     return "text-gray-500";
   };
 

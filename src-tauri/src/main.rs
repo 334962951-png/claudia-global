@@ -44,7 +44,7 @@ use commands::usage::{
 use commands::storage::{
     storage_list_tables, storage_read_table, storage_update_row, storage_delete_row,
     storage_insert_row, storage_execute_sql, storage_reset_database,
-    get_app_setting, save_app_setting,
+    get_app_setting, save_app_setting, get_pricing_config,
 };
 use commands::proxy::{get_proxy_settings, save_proxy_settings, apply_proxy_settings};
 use process::ProcessRegistryState;
@@ -265,6 +265,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             storage_reset_database,
             get_app_setting,
             save_app_setting,
+            get_pricing_config,
 
             // Slash Commands
             commands::slash_commands::slash_commands_list,

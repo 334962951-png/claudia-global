@@ -5,6 +5,7 @@ import { HooksManager } from "@/lib/hooksManager";
 import { logger } from "@/lib/logger";
 import type { HooksConfiguration } from "@/types/hooks";
 import { getApiModel, type ClaudeModel } from "@/types/models";
+import type { PricingProvider } from "@/config/pricing";
 
 /** Process type for tracking in ProcessRegistry */
 export type ProcessType =
@@ -1593,6 +1594,20 @@ export const api = {
       await invoke<void>("save_app_setting", { key, value });
     } catch (error) {
       console.error(`Failed to save setting ${key}:`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get combined pricing configuration (built-in + custom providers).
+   * Used by CustomPricingSettings and UsageDashboard to render model prices.
+   * @returns Promise resolving to { builtIn: PricingProvider[], custom: PricingProvider[] }
+   */
+  async getPricingConfig(): Promise<{ builtIn: PricingProvider[]; custom: PricingProvider[] }> {
+    try {
+      return await invoke<{ builtIn: PricingProvider[]; custom: PricingProvider[] }>("get_pricing_config");
+    } catch (error) {
+      console.error("Failed to get pricing config:", error);
       throw error;
     }
   },
