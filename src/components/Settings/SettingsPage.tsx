@@ -34,6 +34,7 @@ import { CommandsSettingsSection } from "./CommandsSettingsSection";
 import { StorageSettingsSection } from "./StorageSettingsSection";
 import { ProxySettingsSection } from "./ProxySettingsSection";
 import { AnalyticsSettingsSection } from "./AnalyticsSettings";
+import { CustomPricingSettings } from "./CustomPricingSettings";
 
 export type SettingsSection =
   | "general"
@@ -44,7 +45,8 @@ export type SettingsSection =
   | "commands"
   | "storage"
   | "proxy"
-  | "analytics";
+  | "analytics"
+  | "pricing";
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -66,6 +68,7 @@ const NAV_ITEMS: { id: SettingsSection; labelKey: string; icon?: string }[] = [
   { id: "storage", labelKey: "t.settings.storage" },
   { id: "proxy", labelKey: "t.proxy.title" },
   { id: "analytics", labelKey: "t.analytics.title" },
+  { id: "pricing", labelKey: "t.pricing.title" },
 ];
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, className }) => {
@@ -584,6 +587,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, className })
             loadAnalyticsSettings={loadAnalyticsSettings}
           />
         );
+      case "pricing":
+        return <CustomPricingSettings setToast={setToast} />;
       default:
         return null;
     }

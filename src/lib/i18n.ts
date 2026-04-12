@@ -1023,6 +1023,34 @@ export interface Translations {
     analyticsDisabled: string;
     allDataDeleted: string;
   };
+
+  // 自定义定价翻译
+  pricing: {
+    title: string;
+    description: string;
+    builtIn: string;
+    custom: string;
+    models: string;
+    modelId: string;
+    input: string;
+    output: string;
+    cacheWrite: string;
+    cacheRead: string;
+    builtInProviders: string;
+    customProviders: string;
+    addProvider: string;
+    editProvider: string;
+    providerName: string;
+    noCustomProviders: string;
+    addProviderHint: string;
+    saved: string;
+    saveFailed: string;
+    imported: string;
+    importFailed: string;
+    copiedToClipboard: string;
+    import: string;
+    export: string;
+  };
 }
 
 // I18n Context
