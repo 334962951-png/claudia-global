@@ -784,7 +784,7 @@ pub async fn save_app_setting(app: AppHandle, key: String, value: String) -> Res
 mod pricing_constants {
     use serde::Serialize;
 
-    #[derive(Debug, Clone, Serialize)]
+    #[derive(Debug, Clone, Serialize, serde::Deserialize)]
     pub struct ModelPricing {
         pub input_price: f64,
         pub output_price: f64,
@@ -876,7 +876,7 @@ mod pricing_constants {
 use pricing_constants::{anthropic_prices, openrouter_prices, ModelPricing as RsModelPricing};
 
 /// Pricing provider (mirrors frontend PricingProvider interface)
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct PricingProvider {
     id: String,
     name: String,
