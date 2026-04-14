@@ -165,6 +165,7 @@ export const ru: Translations = {
     hooks: "Хуки",
     commands: "Команды",
     storage: "Хранилище",
+    provider: "Провайдер",
 
     generalSettings: "Общие настройки",
     includeCoAuthoredBy: 'Включить "Co-authored by Claude"',

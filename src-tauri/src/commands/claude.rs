@@ -9,8 +9,6 @@ use std::time::SystemTime;
 use tauri::{AppHandle, Emitter, Manager};
 use tokio::process::{Child, Command};
 use tokio::sync::Mutex;
-use tauri_plugin_shell::ShellExt;
-use tauri_plugin_shell::process::CommandEvent;
 use regex;
 use crate::{debug_log, info_log, error_log};
 
@@ -323,150 +321,6 @@ fn create_command_with_custom_env(program: &str, custom_env: &std::collections::
     }
 
     tokio_cmd
-}
-
-/// Determines whether to use sidecar or system binary execution
-#[allow(dead_code)]
-fn should_use_sidecar(claude_path: &str) -> bool {
-    claude_path == "claude-code"
-}
-
-/// Creates a sidecar command with the given arguments
-fn create_sidecar_command(
-    app: &AppHandle,
-    args: Vec<String>,
-    project_path: &str,
-) -> Result<tauri_plugin_shell::process::Command, String> {
-    let mut sidecar_cmd = app
-        .shell()
-        .sidecar("claude-code")
-        .map_err(|e| format!("Failed to create sidecar command: {}", e))?;
-
-    // Add all arguments
-    sidecar_cmd = sidecar_cmd.args(args);
-
-    // Set working directory
-    sidecar_cmd = sidecar_cmd.current_dir(project_path);
-
-    // Set environment variables for Windows shell compatibility
-    if cfg!(target_os = "windows") {
-        // Always set SHELL environment variable on Windows for Claude CLI compatibility
-        let shell_candidates = [
-            "C:\\Program Files\\Git\\bin\\bash.exe",
-            "C:\\Program Files (x86)\\Git\\bin\\bash.exe",
-            "C:\\msys64\\usr\\bin\\bash.exe",
-            "C:\\cygwin64\\bin\\bash.exe",
-            "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-            "powershell.exe",
-            "cmd.exe"
-        ];
-
-        let mut shell_found = false;
-        for shell_path in &shell_candidates {
-            if std::path::Path::new(shell_path).exists() {
-                log::debug!("Setting SHELL environment variable for Windows sidecar: {}", shell_path);
-                sidecar_cmd = sidecar_cmd.env("SHELL", shell_path);
-                shell_found = true;
-                break;
-            }
-        }
-
-        // If no shell found, default to bash (Claude CLI prefers POSIX shells)
-        if !shell_found {
-            log::debug!("No suitable shell found, defaulting to bash for Claude CLI compatibility");
-            sidecar_cmd = sidecar_cmd.env("SHELL", "bash");
-        }
-
-        // Also set other essential environment variables for Windows
-        for (key, value) in std::env::vars() {
-            if key == "PATH"
-                || key == "HOME"
-                || key == "USER"
-                || key == "USERPROFILE"
-                || key == "APPDATA"
-                || key == "LOCALAPPDATA"
-                || key == "TEMP"
-                || key == "TMP"
-                || key == "LANG"
-                || key == "LC_ALL"
-                || key.starts_with("LC_")
-                || key == "NODE_PATH"
-                || key == "NVM_DIR"
-                || key == "NVM_BIN"
-            {
-                sidecar_cmd = sidecar_cmd.env(&key, &value);
-            }
-        }
-    } else {
-        // For Unix-like systems, inherit essential environment variables
-        for (key, value) in std::env::vars() {
-            if key == "PATH"
-                || key == "HOME"
-                || key == "USER"
-                || key == "SHELL"
-                || key == "LANG"
-                || key == "LC_ALL"
-                || key.starts_with("LC_")
-                || key == "NODE_PATH"
-                || key == "NVM_DIR"
-                || key == "NVM_BIN"
-                || key == "HOMEBREW_PREFIX"
-                || key == "HOMEBREW_CELLAR"
-            {
-                sidecar_cmd = sidecar_cmd.env(&key, &value);
-            }
-        }
-
-        // macOS-specific: augment PATH to include common Node/Homebrew/NVM locations
-        #[cfg(target_os = "macos")]
-        {
-            use std::fs;
-            use std::path::PathBuf;
-
-            let current_path = std::env::var("PATH").unwrap_or_default();
-            let mut parts: Vec<String> = current_path.split(':').map(|s| s.to_string()).collect();
-            let mut add_path = |p: String| {
-                if !p.is_empty() && PathBuf::from(&p).exists() && !parts.iter().any(|x| x == &p) {
-                    parts.insert(0, p);
-                }
-            };
-
-            // Homebrew typical locations
-            add_path("/opt/homebrew/bin".to_string());
-            add_path("/usr/local/bin".to_string());
-
-            if let Ok(home) = std::env::var("HOME") {
-                add_path(format!("{}/.local/bin", home));
-                add_path(format!("{}/bin", home));
-
-                // Detect latest NVM Node bin
-                let nvm_versions = PathBuf::from(&home).join(".nvm").join("versions").join("node");
-                if nvm_versions.exists() {
-                    if let Ok(entries) = fs::read_dir(&nvm_versions) {
-                        let mut version_dirs: Vec<PathBuf> = entries.filter_map(|e| e.ok()).map(|e| e.path()).filter(|p| p.is_dir()).collect();
-                        version_dirs.sort_by(|a,b| b.file_name().cmp(&a.file_name()));
-                        if let Some(latest) = version_dirs.first() {
-                            let bin = latest.join("bin");
-                            add_path(bin.to_string_lossy().to_string());
-                            // Also set NVM_DIR/NVM_BIN if not present
-                            let nvm_dir = PathBuf::from(&home).join(".nvm");
-                            sidecar_cmd = sidecar_cmd.env("NVM_DIR", nvm_dir.to_string_lossy().to_string());
-                            sidecar_cmd = sidecar_cmd.env("NVM_BIN", latest.join("bin").to_string_lossy().to_string());
-                        }
-                    }
-                }
-            }
-
-            // System fallbacks
-            add_path("/usr/bin".to_string());
-            add_path("/bin".to_string());
-
-            let new_path = parts.join(":");
-            sidecar_cmd = sidecar_cmd.env("PATH", new_path);
-        }
-    }
-
-    Ok(sidecar_cmd)
 }
 
 /// Creates a system binary command with the given arguments
@@ -903,88 +757,6 @@ pub async fn check_claude_version(app: AppHandle) -> Result<ClaudeVersionStatus,
         }
     };
 
-    // If the selected path is the special sidecar identifier, execute it to get version
-    if claude_path == "claude-code" {
-        use tauri_plugin_shell::process::CommandEvent;
-
-        // Create a temporary directory for the sidecar to run in
-        let temp_dir = std::env::temp_dir();
-
-        // Create sidecar command with --version flag
-        let sidecar_cmd = match create_sidecar_command(&app, vec!["--version".to_string()], &temp_dir.to_string_lossy()) {
-            Ok(cmd) => cmd,
-            Err(e) => {
-                log::error!("Failed to create sidecar command: {}", e);
-                return Ok(ClaudeVersionStatus {
-                    is_installed: true, // We know it exists, just couldn't create command
-                    version: None,
-                    output: format!("Using bundled Claude Code sidecar (command creation failed: {})", e),
-                });
-            }
-        };
-
-        // Spawn the sidecar and collect output
-        match sidecar_cmd.spawn() {
-            Ok((mut rx, _child)) => {
-                let mut stdout_output = String::new();
-                let mut stderr_output = String::new();
-                let mut exit_success = false;
-
-                // Collect output from the sidecar
-                while let Some(event) = rx.recv().await {
-                    match event {
-                        CommandEvent::Stdout(data) => {
-                            let line = String::from_utf8_lossy(&data);
-                            stdout_output.push_str(&line);
-                        }
-                        CommandEvent::Stderr(data) => {
-                            let line = String::from_utf8_lossy(&data);
-                            stderr_output.push_str(&line);
-                        }
-                        CommandEvent::Terminated(payload) => {
-                            exit_success = payload.code.unwrap_or(-1) == 0;
-                            break;
-                        }
-                        _ => {}
-                    }
-                }
-
-                // Use regex to directly extract version pattern (e.g., "1.0.41")
-                let version_regex = regex::Regex::new(r"(\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?(?:\+[a-zA-Z0-9.-]+)?)").ok();
-
-                let version = if let Some(regex) = version_regex {
-                    regex.captures(&stdout_output)
-                        .and_then(|captures| captures.get(1))
-                        .map(|m| m.as_str().to_string())
-                } else {
-                    None
-                };
-
-                let full_output = if stderr_output.is_empty() {
-                    stdout_output.clone()
-                } else {
-                    format!("{}\n{}", stdout_output, stderr_output)
-                };
-
-                // Check if the output matches the expected format
-                let is_valid = stdout_output.contains("(Claude Code)") || stdout_output.contains("Claude Code") || version.is_some();
-
-                return Ok(ClaudeVersionStatus {
-                    is_installed: is_valid && exit_success,
-                    version,
-                    output: full_output.trim().to_string(),
-                });
-            }
-            Err(e) => {
-                log::error!("Failed to execute sidecar: {}", e);
-                return Ok(ClaudeVersionStatus {
-                    is_installed: true, // We know it exists, just couldn't get version
-                    version: None,
-                    output: format!("Using bundled Claude Code sidecar (version check failed: {})", e),
-                });
-            }
-        }
-    }
     use log::debug;debug!("Claude path: {}", claude_path);
 
     // In production builds, we can't check the version directly
@@ -1406,6 +1178,7 @@ pub async fn execute_claude_code(
     model: String,
 ) -> Result<(), String> {
     use crate::commands::agents::{AgentDb, get_enabled_environment_variables};
+    use crate::commands::providers::get_active_provider_env;
     log::info!(
         "Starting new Claude Code session in: {} with model: {}",
         project_path,
@@ -1413,12 +1186,9 @@ pub async fn execute_claude_code(
     );
 
     // Get enabled environment variables from database
-    let env_vars = match get_enabled_environment_variables(app.state::<AgentDb>()).await {
+    let mut env_vars = match get_enabled_environment_variables(app.state::<AgentDb>()).await {
         Ok(vars) => {
             log::info!("Retrieved {} environment variables from database", vars.len());
-            for (key, value) in &vars {
-                log::debug!("Environment variable: {}={}", key, value);
-            }
             vars
         },
         Err(e) => {
@@ -1426,6 +1196,14 @@ pub async fn execute_claude_code(
             std::collections::HashMap::new()
         }
     };
+
+    // Inject provider-based env vars (API keys, base URLs) - these can override user env vars
+    if let Ok(provider_env) = get_active_provider_env(&app) {
+        for (key, value) in provider_env {
+            log::info!("Injecting provider env var: {}", key);
+            env_vars.insert(key, value);
+        }
+    }
 
     let claude_path = find_claude_binary(&app)?;
 
@@ -1439,13 +1217,6 @@ pub async fn execute_claude_code(
         "--verbose".to_string(),
         "--dangerously-skip-permissions".to_string(),
     ];
-
-    // On macOS, when the stored path is the special sidecar identifier, use sidecar to spawn
-    #[cfg(target_os = "macos")]
-    if claude_path == "claude-code" {
-        // TODO: Update sidecar to also use environment variables
-        return spawn_claude_sidecar(app, args, prompt, model, project_path).await;
-    }
 
     let cmd = create_system_command_with_env(&claude_path, args, &project_path, &env_vars);
     spawn_claude_process(app, cmd, prompt, model, project_path).await
@@ -1485,6 +1256,7 @@ pub async fn continue_claude_code(
     model: String,
 ) -> Result<(), String> {
     use crate::commands::agents::{AgentDb, get_enabled_environment_variables};
+    use crate::commands::providers::get_active_provider_env;
     log::info!(
         "Continuing Claude Code conversation in: {} with model: {}",
         project_path,
@@ -1492,13 +1264,21 @@ pub async fn continue_claude_code(
     );
 
     // Get enabled environment variables from database
-    let env_vars = match get_enabled_environment_variables(app.state::<AgentDb>()).await {
+    let mut env_vars = match get_enabled_environment_variables(app.state::<AgentDb>()).await {
         Ok(vars) => vars,
         Err(e) => {
             log::warn!("Failed to get environment variables: {}", e);
             std::collections::HashMap::new()
         }
     };
+
+    // Inject provider-based env vars (API keys, base URLs) - these can override user env vars
+    if let Ok(provider_env) = get_active_provider_env(&app) {
+        for (key, value) in provider_env {
+            log::info!("Injecting provider env var: {}", key);
+            env_vars.insert(key, value);
+        }
+    }
 
     let claude_path = find_claude_binary(&app)?;
 
@@ -1513,12 +1293,6 @@ pub async fn continue_claude_code(
         "--verbose".to_string(),
         "--dangerously-skip-permissions".to_string(),
     ];
-
-    // On macOS, when the stored path is the special sidecar identifier, use sidecar to spawn
-    #[cfg(target_os = "macos")]
-    if claude_path == "claude-code" {
-        return spawn_claude_sidecar(app, args, prompt, model, project_path).await;
-    }
 
     let cmd = create_system_command_with_env(&claude_path, args, &project_path, &env_vars);
     spawn_claude_process(app, cmd, prompt, model, project_path).await
@@ -1562,6 +1336,7 @@ pub async fn resume_claude_code(
     model: String,
 ) -> Result<(), String> {
     use crate::commands::agents::{AgentDb, get_enabled_environment_variables};
+    use crate::commands::providers::get_active_provider_env;
     log::info!(
         "Resuming Claude Code session: {} in: {} with model: {}",
         session_id,
@@ -1570,13 +1345,21 @@ pub async fn resume_claude_code(
     );
 
     // Get enabled environment variables from database
-    let env_vars = match get_enabled_environment_variables(app.state::<AgentDb>()).await {
+    let mut env_vars = match get_enabled_environment_variables(app.state::<AgentDb>()).await {
         Ok(vars) => vars,
         Err(e) => {
             log::warn!("Failed to get environment variables: {}", e);
             std::collections::HashMap::new()
         }
     };
+
+    // Inject provider-based env vars (API keys, base URLs) - these can override user env vars
+    if let Ok(provider_env) = get_active_provider_env(&app) {
+        for (key, value) in provider_env {
+            log::info!("Injecting provider env var: {}", key);
+            env_vars.insert(key, value);
+        }
+    }
 
     let claude_path = find_claude_binary(&app)?;
 
@@ -1592,12 +1375,6 @@ pub async fn resume_claude_code(
         "--verbose".to_string(),
         "--dangerously-skip-permissions".to_string(),
     ];
-
-    // On macOS, when the stored path is the special sidecar identifier, use sidecar to spawn
-    #[cfg(target_os = "macos")]
-    if claude_path == "claude-code" {
-        return spawn_claude_sidecar(app, args, prompt, model, project_path).await;
-    }
 
     let cmd = create_system_command_with_env(&claude_path, args, &project_path, &env_vars);
     spawn_claude_process(app, cmd, prompt, model, project_path).await
@@ -2013,158 +1790,6 @@ async fn spawn_claude_process(app: AppHandle, mut cmd: Command, prompt: String, 
 
         // Clear the process from state
         *current_process = None;
-    });
-
-    Ok(())
-}
-
-/// Helper function to spawn Claude sidecar process and handle streaming
-#[allow(dead_code)]
-async fn spawn_claude_sidecar(
-    app: AppHandle,
-    args: Vec<String>,
-    prompt: String,
-    model: String,
-    project_path: String,
-) -> Result<(), String> {
-    use std::sync::Mutex;
-
-    // Create the sidecar command
-    let sidecar_cmd = create_sidecar_command(&app, args, &project_path)?;
-
-    // Spawn the sidecar process
-    let (mut rx, child) = sidecar_cmd
-        .spawn()
-        .map_err(|e| format!("Failed to spawn Claude sidecar: {}", e))?;
-
-    // Get the child PID for logging
-    let pid = child.pid();
-    log::info!("Spawned Claude sidecar process with PID: {:?}", pid);
-
-    // We'll extract the session ID from Claude's init message
-    let session_id_holder: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
-    let run_id_holder: Arc<Mutex<Option<i64>>> = Arc::new(Mutex::new(None));
-
-    // Register with ProcessRegistry
-    let registry = app.state::<crate::process::ProcessRegistryState>();
-    let registry_clone = registry.0.clone();
-    let project_path_clone = project_path.clone();
-    let prompt_clone = prompt.clone();
-    let model_clone = model.clone();
-
-    // Spawn task to read events from sidecar
-    let app_handle = app.clone();
-    let session_id_holder_clone = session_id_holder.clone();
-    let run_id_holder_clone = run_id_holder.clone();
-
-    tauri::async_runtime::spawn(async move {
-        while let Some(event) = rx.recv().await {
-            match event {
-                CommandEvent::Stdout(line_bytes) => {
-                    let line = String::from_utf8_lossy(&line_bytes);
-                    let line_str = line.trim_end_matches('\n').trim_end_matches('\r');
-
-                    if !line_str.is_empty() {
-                        log::debug!("Claude sidecar stdout: {}", line_str);
-
-                        // Parse the line to check for init message with session ID
-                        if let Ok(msg) = serde_json::from_str::<serde_json::Value>(line_str) {
-                            if msg["type"] == "system" && msg["subtype"] == "init" {
-                                if let Some(claude_session_id) = msg["session_id"].as_str() {
-                                    if let Ok(mut session_id_guard) = session_id_holder_clone.lock() {
-                                        if session_id_guard.is_none() {
-                                            *session_id_guard = Some(claude_session_id.to_string());
-                                            log::info!("Extracted Claude session ID: {}", claude_session_id);
-
-                                            // Register with ProcessRegistry using Claude's session ID
-                                            match registry_clone.register_claude_session(
-                                                claude_session_id.to_string(),
-                                                pid,
-                                                project_path_clone.clone(),
-                                                prompt_clone.clone(),
-                                                model_clone.clone(),
-                                            ) {
-                                                Ok(run_id) => {
-                                                    log::info!("Registered Claude sidecar session with run_id: {}", run_id);
-                                                    if let Ok(mut run_id_guard) = run_id_holder_clone.lock() {
-                                                        *run_id_guard = Some(run_id);
-                                                    }
-                                                }
-                                                Err(e) => {
-                                                    log::error!("Failed to register Claude sidecar session: {}", e);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Store live output in registry if we have a run_id
-                        if let Ok(guard) = run_id_holder_clone.lock() {
-                            if let Some(run_id) = *guard {
-                                let _ = registry_clone.append_live_output(run_id, line_str);
-                            }
-                        }
-
-                        // Emit the line to the frontend with session isolation if we have session ID
-                        if let Ok(guard) = session_id_holder_clone.lock() {
-                            if let Some(ref session_id) = *guard {
-                                let _ = app_handle.emit(&format!("claude-output:{}", session_id), line_str);
-                            }
-                        }
-                        // Also emit to the generic event for backward compatibility
-                        let _ = app_handle.emit("claude-output", line_str);
-                    }
-                }
-                CommandEvent::Stderr(line_bytes) => {
-                    let line = String::from_utf8_lossy(&line_bytes);
-                    let line_str = line.trim_end_matches('\n').trim_end_matches('\r');
-
-                    if !line_str.is_empty() {
-                        log::error!("Claude sidecar stderr: {}", line_str);
-
-                        // Emit error lines to the frontend with session isolation if we have session ID
-                        if let Ok(guard) = session_id_holder_clone.lock() {
-                            if let Some(ref session_id) = *guard {
-                                let _ = app_handle.emit(&format!("claude-error:{}", session_id), line_str);
-                            }
-                        }
-                        // Also emit to the generic event for backward compatibility
-                        let _ = app_handle.emit("claude-error", line_str);
-                    }
-                }
-                CommandEvent::Terminated(payload) => {
-                    log::info!("Claude sidecar process terminated with payload: {:?}", payload);
-
-                    // Add a small delay to ensure all messages are processed
-                    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-
-                    let success = payload.code.unwrap_or(-1) == 0;
-
-                    if let Ok(guard) = session_id_holder_clone.lock() {
-                        if let Some(ref session_id) = *guard {
-                            let _ = app_handle.emit(&format!("claude-complete:{}", session_id), success);
-                        }
-                    }
-                    // Also emit to the generic event for backward compatibility
-                    let _ = app_handle.emit("claude-complete", success);
-
-                    // Unregister from ProcessRegistry if we have a run_id
-                    if let Ok(guard) = run_id_holder_clone.lock() {
-                        if let Some(run_id) = *guard {
-                            let _ = registry_clone.unregister_process(run_id);
-                        }
-                    }
-
-                    break;
-                }
-                _ => {
-                    // Handle other event types if needed
-                    log::debug!("Claude sidecar event: {:?}", event);
-                }
-            }
-        }
     });
 
     Ok(())

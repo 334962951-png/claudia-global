@@ -163,6 +163,7 @@ export const zh: Translations = {
     hooks: "钩子",
     commands: "命令",
     storage: "存储",
+    provider: "模型 Provider",
 
     generalSettings: "通用设置",
     includeCoAuthoredBy: '包含"由 Claude 协作"',

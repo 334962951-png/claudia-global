@@ -164,6 +164,7 @@ export const hi: Translations = {
     hooks: "हुक्स",
     commands: "कमांड्स",
     storage: "स्टोरेज",
+    provider: "प्रदाता",
 
     generalSettings: "सामान्य सेटिंग्स",
     includeCoAuthoredBy: '"Co-authored by Claude" शामिल करें',

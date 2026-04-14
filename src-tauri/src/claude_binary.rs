@@ -50,13 +50,7 @@ pub fn find_claude_binary(app_handle: &tauri::AppHandle) -> Result<String, Strin
                 ) {
                     info!("Found stored claude path in database: {}", stored_path);
 
-                    // If it's a sidecar reference, return it directly
-                    if stored_path == "claude-code" {
-                        info!("Using bundled sidecar as configured");
-                        return Ok(stored_path);
-                    }
-
-                    // Otherwise check if the path still exists
+                    // Check if the stored path still exists
                     let path_buf = PathBuf::from(&stored_path);
                     if path_buf.exists() && path_buf.is_file() {
                         return Ok(stored_path);
@@ -90,7 +84,7 @@ pub fn find_claude_binary(app_handle: &tauri::AppHandle) -> Result<String, Strin
         info!("Found Claude installation: {:?}", installation);
     }
 
-    // Select the best installation (highest version)
+    // Select the best installation from discovered system binaries
     if let Some(best) = select_best_installation(installations) {
         info!(
             "Selected Claude installation: path={}, version={:?}, source={}",
@@ -134,8 +128,8 @@ pub fn discover_claude_installations() -> Vec<ClaudeInstallation> {
 /// Returns a preference score for installation sources (lower is better)
 fn source_preference(installation: &ClaudeInstallation) -> u8 {
     match installation.source.as_str() {
-        "bundled" => 0, // Bundled sidecar has highest preference
-        "which" | "where" => 1, // Both which (Unix) and where (Windows) have same priority
+        "npm-cli" => 0, // npm CLI wrapper — highest priority, most reliable
+        "which" | "where" => 1, // Both which (Unix) and where (Windows)
         "homebrew" => 2,
         "system" => 3,
         source if source.starts_with("nvm") => 4,
@@ -151,16 +145,16 @@ fn source_preference(installation: &ClaudeInstallation) -> u8 {
     }
 }
 
-/// Discovers all Claude installations on the system
+/// Discovers all available Claude installations on the system
 fn discover_system_installations() -> Vec<ClaudeInstallation> {
     let mut installations = Vec::new();
 
-    // 1. Check for bundled sidecar first (highest priority)
-    if let Some(installation) = find_bundled_installation() {
+    // 1. Check for npm CLI wrapper first (most reliable on Windows — avoids desktop app)
+    if let Some(installation) = find_npm_cli() {
         installations.push(installation);
     }
 
-    // 2. Try 'which' command (now works in production)
+    // 2. Try 'which'/'where' command
     if let Some(installation) = try_which_command() {
         installations.push(installation);
     }
@@ -178,16 +172,42 @@ fn discover_system_installations() -> Vec<ClaudeInstallation> {
     installations
 }
 
-/// Find bundled sidecar installation
-fn find_bundled_installation() -> Option<ClaudeInstallation> {
-    // The bundled sidecar is referenced by the special identifier "claude-code"
-    // This will be resolved by Tauri's sidecar system at runtime
-    Some(ClaudeInstallation {
-        path: "claude-code".to_string(),
-        version: None, // Version will be determined at runtime
-        source: "bundled".to_string(),
-        installation_type: InstallationType::Bundled,
-    })
+/// Find the npm-installed Claude Code CLI wrapper directly.
+/// On Windows this is the most reliable way to get the CLI (not the desktop app).
+fn find_npm_cli() -> Option<ClaudeInstallation> {
+    let home_var = if cfg!(target_os = "windows") { "APPDATA" } else { "HOME" };
+    let home = std::env::var(home_var).ok()?;
+
+    if cfg!(target_os = "windows") {
+        // Windows: look for the npm .cmd wrapper which calls node + cli.js
+        let wrapper_path = PathBuf::from(&home).join("npm").join("claude.cmd");
+        if wrapper_path.exists() {
+            let path_str = wrapper_path.to_string_lossy().to_string();
+            debug!("Found npm CLI wrapper at: {}", path_str);
+            let version = get_claude_version(&path_str).ok().flatten();
+            return Some(ClaudeInstallation {
+                path: path_str,
+                version,
+                source: "npm-cli".to_string(),
+                installation_type: InstallationType::System,
+            });
+        }
+    } else {
+        // Unix: look for the npm bin symlink
+        let bin_path = PathBuf::from(&home).join(".npm-global").join("bin").join("claude");
+        if bin_path.exists() {
+            let path_str = bin_path.to_string_lossy().to_string();
+            let version = get_claude_version(&path_str).ok().flatten();
+            return Some(ClaudeInstallation {
+                path: path_str,
+                version,
+                source: "npm-cli".to_string(),
+                installation_type: InstallationType::System,
+            });
+        }
+    }
+
+    None
 }
 
 /// Try using the 'which' command to find Claude (or 'where' on Windows)
@@ -223,30 +243,42 @@ fn try_which_command() -> Option<ClaudeInstallation> {
             // Parse output based on the command used
             let path = if cfg!(target_os = "windows") {
                 // On Windows, 'where' command returns full paths, potentially multiple lines
-                // Prefer .cmd, .bat, or .exe files over files without extensions
-                let mut best_path = None;
+                // We prefer .cmd (npm CLI wrapper) over .exe (could be desktop app)
+                // Skip paths that look like the Claude desktop app
+                let mut cmd_path = None;
+                let mut exe_path = None;
                 for line in output_str.lines() {
                     let trimmed = line.trim();
                     if trimmed.is_empty() {
                         continue;
                     }
 
-                    // Check if this path has a valid Windows executable extension
                     let path_buf = PathBuf::from(trimmed);
-                    if let Some(extension) = path_buf.extension() {
-                        let ext = extension.to_string_lossy().to_lowercase();
-                        if ext == "cmd" || ext == "bat" || ext == "exe" {
-                            best_path = Some(trimmed.to_string());
-                            break; // Prefer the first executable file found
-                        }
+
+                    // Skip the Claude desktop app (typically at AppData\Local\Claude\)
+                    let path_lower = trimmed.to_lowercase();
+                    if path_lower.contains("appdata\\local\\claude\\") {
+                        debug!("Skipping Claude desktop app path: {}", trimmed);
+                        continue;
                     }
 
-                    // If no executable extension found yet, keep the first path as fallback
-                    if best_path.is_none() {
-                        best_path = Some(trimmed.to_string());
+                    if let Some(extension) = path_buf.extension() {
+                        let ext = extension.to_string_lossy().to_lowercase();
+                        if ext == "cmd" || ext == "bat" {
+                            // Prefer .cmd/.bat (npm CLI wrapper) — take the first one
+                            if cmd_path.is_none() {
+                                cmd_path = Some(trimmed.to_string());
+                            }
+                        } else if ext == "exe" {
+                            // .exe could be the desktop app — use as fallback only
+                            if exe_path.is_none() {
+                                exe_path = Some(trimmed.to_string());
+                            }
+                        }
                     }
                 }
-                best_path
+                // Prefer .cmd over .exe
+                cmd_path.or(exe_path)
             } else {
                 // Parse aliased output on Unix: "claude: aliased to /path/to/claude"
                 if output_str.starts_with("claude:") && output_str.contains("aliased to") {
@@ -340,10 +372,8 @@ fn find_standard_installations() -> Vec<ClaudeInstallation> {
 
     // Common installation paths for claude
     let mut paths_to_check: Vec<(String, String)> = if cfg!(target_os = "windows") {
-        // Windows-specific paths
+        // Windows-specific paths (NOT including AppData\Local\Claude which is the desktop app)
         vec![
-            ("C:\\Program Files\\Claude\\claude.exe".to_string(), "system".to_string()),
-            ("C:\\Program Files (x86)\\Claude\\claude.exe".to_string(), "system".to_string()),
             ("C:\\Windows\\System32\\claude.exe".to_string(), "system".to_string()),
         ]
     } else {
@@ -366,17 +396,14 @@ fn find_standard_installations() -> Vec<ClaudeInstallation> {
 
         if cfg!(target_os = "windows") {
             // Windows-specific user paths
+            // NOTE: Skip AppData\Local\Claude — that's the desktop app, not the CLI
             paths_to_check.extend(vec![
                 (
-                    format!("{}\\AppData\\Local\\Claude\\{}", home, claude_exe),
-                    "claude-local".to_string(),
-                ),
-                (
-                    format!("{}\\AppData\\Roaming\\npm\\{}", home, claude_exe),
+                    format!("{}\\AppData\\Roaming\\npm\\claude.cmd", home),
                     "npm-global".to_string(),
                 ),
                 (
-                    format!("{}\\AppData\\Roaming\\npm\\node_modules\\.bin\\{}", home, claude_exe),
+                    format!("{}\\AppData\\Roaming\\npm\\node_modules\\.bin\\claude.cmd", home),
                     "node-modules".to_string(),
                 ),
             ]);
@@ -429,30 +456,34 @@ fn find_standard_installations() -> Vec<ClaudeInstallation> {
         }
     }
 
-    // Also check if claude is available in PATH (without full path)
-    let claude_cmd = if cfg!(target_os = "windows") { "claude.exe" } else { "claude" };
-    let mut cmd = Command::new(claude_cmd);
-    cmd.arg("--version");
-    
-    // On Windows, hide the console window to prevent CMD popup
-    #[cfg(target_os = "windows")]
+    // Also check if claude is available in PATH (without full path).
+    // In production builds, skip running the binary to avoid triggering GUI mode.
+    #[cfg(debug_assertions)]
     {
-        use std::os::windows::process::CommandExt;
-        const CREATE_NO_WINDOW: u32 = 0x08000000;
-        cmd.creation_flags(CREATE_NO_WINDOW);
-    }
-    
-    if let Ok(output) = cmd.output() {
-        if output.status.success() {
-            debug!("claude is available in PATH");
-            let version = extract_version_from_output(&output.stdout);
+        let claude_cmd = if cfg!(target_os = "windows") { "claude.exe" } else { "claude" };
+        let mut cmd = Command::new(claude_cmd);
+        cmd.arg("--version");
 
-            installations.push(ClaudeInstallation {
-                path: claude_cmd.to_string(),
-                version,
-                source: "PATH".to_string(),
-                installation_type: InstallationType::System,
-            });
+        // On Windows, hide the console window to prevent CMD popup
+        #[cfg(target_os = "windows")]
+        {
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+            cmd.creation_flags(CREATE_NO_WINDOW);
+        }
+
+        if let Ok(output) = cmd.output() {
+            if output.status.success() {
+                debug!("claude is available in PATH");
+                let version = extract_version_from_output(&output.stdout);
+
+                installations.push(ClaudeInstallation {
+                    path: claude_cmd.to_string(),
+                    version,
+                    source: "PATH".to_string(),
+                    installation_type: InstallationType::System,
+                });
+            }
         }
     }
 
@@ -461,28 +492,39 @@ fn find_standard_installations() -> Vec<ClaudeInstallation> {
 
 /// Get Claude version by running --version command
 fn get_claude_version(path: &str) -> Result<Option<String>, String> {
-    let mut cmd = Command::new(path);
-    cmd.arg("--version");
-    
-    // On Windows, hide the console window to prevent CMD popup
-    #[cfg(target_os = "windows")]
+    // In production builds, skip version detection to avoid accidentally triggering
+    // Claude Code's GUI mode on Windows. The path existence check in find_claude_binary
+    // is sufficient for production — version info is only needed for the UI selector.
+    #[cfg(not(debug_assertions))]
     {
-        use std::os::windows::process::CommandExt;
-        const CREATE_NO_WINDOW: u32 = 0x08000000;
-        cmd.creation_flags(CREATE_NO_WINDOW);
+        return Ok(None);
     }
-    
-    match cmd.output() {
-        Ok(output) => {
-            if output.status.success() {
-                Ok(extract_version_from_output(&output.stdout))
-            } else {
+
+    #[cfg(debug_assertions)]
+    {
+        let mut cmd = Command::new(path);
+        cmd.arg("--version");
+
+        // On Windows, hide the console window to prevent CMD popup
+        #[cfg(target_os = "windows")]
+        {
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+            cmd.creation_flags(CREATE_NO_WINDOW);
+        }
+
+        match cmd.output() {
+            Ok(output) => {
+                if output.status.success() {
+                    Ok(extract_version_from_output(&output.stdout))
+                } else {
+                    Ok(None)
+                }
+            }
+            Err(e) => {
+                warn!("Failed to get version for {}: {}", path, e);
                 Ok(None)
             }
-        }
-        Err(e) => {
-            warn!("Failed to get version for {}: {}", path, e);
-            Ok(None)
         }
     }
 }
@@ -518,6 +560,7 @@ fn extract_version_from_output(stdout: &[u8]) -> Option<String> {
 
 /// Select the best installation based on version
 fn select_best_installation(installations: Vec<ClaudeInstallation>) -> Option<ClaudeInstallation> {
+    // Prefer installations with version information.
     // In production builds, version information may not be retrievable because
     // spawning external processes can be restricted. We therefore no longer
     // discard installations that lack a detected version – the mere presence

@@ -1,14 +1,13 @@
 {
   "name": "claudia",
   "private": true,
-  "version": "0.1.65",
+  "version": "0.1.66",
   "license": "AGPL-3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --config vite.config.production.ts",
     "build:debug": "tsc && vite build --mode development",
-    "prebuild": "bun run build:executables:current",
     "build:executables": "bun run scripts/fetch-and-build.js --version=1.0.83",
     "build:executables:current": "bun run scripts/fetch-and-build.js current --version=1.0.83",
     "build:executables:linux": "bun run scripts/fetch-and-build.js linux --version=1.0.83",
@@ -46,12 +45,6 @@
     "@tailwindcss/cli": "^4.1.8",
     "@tailwindcss/vite": "^4.1.8",
     "@tanstack/react-virtual": "^3.13.10",
-    "@tauri-apps/api": "^2.1.1",
-    "@tauri-apps/plugin-dialog": "^2.0.2",
-    "@tauri-apps/plugin-global-shortcut": "^2.0.0",
-    "@tauri-apps/plugin-opener": "^2",
-    "@tauri-apps/plugin-shell": "^2.0.1",
-    "@tauri-apps/plugin-window-state": "^2.4.0",
     "@types/diff": "^8.0.0",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@uiw/react-md-editor": "^4.0.7",
@@ -75,7 +68,13 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
-    "@tauri-apps/cli": "^2.7.1",
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/cli": "^2.10.1",
+    "@tauri-apps/plugin-dialog": "^2.7.0",
+    "@tauri-apps/plugin-global-shortcut": "^2.3.1",
+    "@tauri-apps/plugin-opener": "^2.0.0",
+    "@tauri-apps/plugin-shell": "^2.3.5",
+    "@tauri-apps/plugin-window-state": "^2.4.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -105,5 +104,8 @@
   "trustedDependencies": [
     "@parcel/watcher",
     "@tailwindcss/oxide"
-  ]
+  ],
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.60.1"
+  }
 }

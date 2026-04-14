@@ -164,6 +164,7 @@ export const ko: Translations = {
     hooks: "훅",
     commands: "명령어",
     storage: "저장소",
+    provider: "공급자",
 
     generalSettings: "일반 설정",
     includeCoAuthoredBy: '"Claude와 공동 작성" 포함',

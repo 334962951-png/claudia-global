@@ -163,6 +163,7 @@ export const ar: Translations = {
     hooks: "الخطافات",
     commands: "الأوامر",
     storage: "التخزين",
+    provider: "مزود الخدمة",
 
     generalSettings: "الإعدادات العامة",
     includeCoAuthoredBy: 'تضمين "شارك في التأليف بواسطة Claude"',

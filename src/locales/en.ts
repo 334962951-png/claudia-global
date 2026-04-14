@@ -164,6 +164,7 @@ export const en: Translations = {
     hooks: "Hooks",
     commands: "Commands",
     storage: "Storage",
+    provider: "Provider",
 
     generalSettings: "General Settings",
     includeCoAuthoredBy: 'Include "Co-authored by Claude"',

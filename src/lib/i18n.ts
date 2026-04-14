@@ -196,6 +196,7 @@ export interface Translations {
     hooks: string;
     commands: string;
     storage: string;
+    provider: string;
 
     // 通用设置
     generalSettings: string;

@@ -164,6 +164,7 @@ export const ja: Translations = {
     hooks: "フック",
     commands: "コマンド",
     storage: "ストレージ",
+    provider: "プロバイダー",
 
     generalSettings: "一般設定",
     includeCoAuthoredBy: '"Claudeとの共同作成"を含める',
