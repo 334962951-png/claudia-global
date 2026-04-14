@@ -1,6 +1,6 @@
 [package]
 name = "claudia"
-version = "0.1.65"
+version = "0.1.66"
 description = "GUI app and Toolkit for Claude Code"
 authors = ["mufeedvh", "123vviekr"]
 license = "AGPL-3.0"
@@ -20,7 +20,7 @@ crate-type = ["lib", "cdylib", "staticlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["protocol-asset", "tray-icon", "image-png"] }
+tauri = { version = "2", features = ["protocol-asset", "image-png"] }
 tauri-plugin-shell = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"

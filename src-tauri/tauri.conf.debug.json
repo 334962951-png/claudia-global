@@ -4,9 +4,9 @@
   "version": "0.1.65",
   "identifier": "claudia.asterisk.so",
   "build": {
-    "beforeDevCommand": "bun run build:executables:current && bun run dev",
+    "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "bun run build:debug",
+    "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
   "app": {
@@ -41,7 +41,6 @@
       "icons/icon.icns",
       "icons/icon.png"
     ],
-    "externalBin": ["binaries/claude-code"],
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",

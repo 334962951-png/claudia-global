@@ -485,6 +485,29 @@ async function withErrorHandling<T>(fn: () => Promise<T>, operation: string): Pr
   }
 }
 
+// ─── LLM Provider Types ────────────────────────────────────────────────────────
+
+export interface LLMProviderOption {
+  id: string;
+  name: string;
+  icon: string;
+  api_key_label: string;
+  base_url_hint?: string;
+  protocol: "anthropic" | "openai";
+}
+
+export interface LLMProviderConfig {
+  id: string;
+  name: string;
+  api_key?: string;
+  base_url?: string;
+}
+
+export interface LiteLLMStatus {
+  running: boolean;
+  port: number;
+}
+
 /**
  * API client for interacting with the Rust backend
  */
@@ -1610,6 +1633,32 @@ export const api = {
       console.error("Failed to get pricing config:", error);
       throw error;
     }
+  },
+
+  // ─── LLM Provider ────────────────────────────────────────────────────────────
+
+  async getProviders(): Promise<LLMProviderOption[]> {
+    return withErrorHandling(() => invoke<LLMProviderOption[]>("get_providers"), "get providers")
+  },
+
+  async getProviderConfig(): Promise<LLMProviderConfig> {
+    return withErrorHandling(() => invoke<LLMProviderConfig>("get_provider_config"), "get provider config")
+  },
+
+  async saveProviderConfig(providerId: string, apiKey: string, baseUrl?: string): Promise<void> {
+    return withErrorHandling(() => invoke("save_provider_config", { providerId, apiKey, baseUrl }), "save provider config")
+  },
+
+  async getLiteLLMStatus(): Promise<LiteLLMStatus> {
+    return withErrorHandling(() => invoke<LiteLLMStatus>("get_litellm_status"), "get LiteLLM status")
+  },
+
+  async startLiteLLM(apiKey: string, port: number = 8000): Promise<void> {
+    return withErrorHandling(() => invoke("start_litellm", { apiKey, port }), "start LiteLLM")
+  },
+
+  async stopLiteLLM(): Promise<void> {
+    return withErrorHandling(() => invoke("stop_litellm"), "stop LiteLLM")
   },
 
   /**

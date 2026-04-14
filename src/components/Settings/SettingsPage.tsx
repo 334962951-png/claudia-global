@@ -35,6 +35,7 @@ import { StorageSettingsSection } from "./StorageSettingsSection";
 import { ProxySettingsSection } from "./ProxySettingsSection";
 import { AnalyticsSettingsSection } from "./AnalyticsSettings";
 import { CustomPricingSettings } from "./CustomPricingSettings";
+import { ProviderSettingsSection } from "./ProviderSettingsSection";
 
 export type SettingsSection =
   | "general"
@@ -46,7 +47,8 @@ export type SettingsSection =
   | "storage"
   | "proxy"
   | "analytics"
-  | "pricing";
+  | "pricing"
+  | "provider";
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -69,6 +71,7 @@ const NAV_ITEMS: { id: SettingsSection; labelKey: string; icon?: string }[] = [
   { id: "proxy", labelKey: "t.proxy.title" },
   { id: "analytics", labelKey: "t.analytics.title" },
   { id: "pricing", labelKey: "t.pricing.title" },
+  { id: "provider", labelKey: "t.settings.provider" },
 ];
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, className }) => {
@@ -490,6 +493,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, className })
     if (item.labelKey === "t.settings.hooks") return t.settings.hooks;
     if (item.labelKey === "t.settings.commands") return t.settings.commands;
     if (item.labelKey === "t.settings.storage") return t.settings.storage;
+    if (item.labelKey === "t.pricing.title") return t.pricing.title;
+    if (item.labelKey === "t.settings.provider") return t.settings.provider;
     return item.id;
   };
 
@@ -589,6 +594,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack, className })
         );
       case "pricing":
         return <CustomPricingSettings setToast={setToast} />;
+      case "provider":
+        return <ProviderSettingsSection setToast={setToast} onChange={() => {}} />;
       default:
         return null;
     }

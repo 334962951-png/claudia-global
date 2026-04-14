@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "bun run build:executables:current && bun run build",
+    "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
   "app": {
@@ -48,7 +48,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns"
     ],
-    "externalBin": ["binaries/claude-code"],
     "resources": [],
     "copyright": "© 2025 Asterisk. All rights reserved.",
     "category": "DeveloperTool",

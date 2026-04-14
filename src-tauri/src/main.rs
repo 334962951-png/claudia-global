@@ -47,6 +47,14 @@ use commands::storage::{
     get_app_setting, save_app_setting, get_pricing_config,
 };
 use commands::proxy::{get_proxy_settings, save_proxy_settings, apply_proxy_settings};
+use commands::providers::{
+    get_providers,
+    get_provider_config,
+    save_provider_config,
+    get_litellm_status,
+    start_litellm,
+    stop_litellm,
+};
 use process::ProcessRegistryState;
 use std::sync::Mutex;
 use tauri::Manager;
@@ -276,6 +284,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             // Proxy Settings
             get_proxy_settings,
             save_proxy_settings,
+
+            // Provider Settings
+            get_providers,
+            get_provider_config,
+            save_provider_config,
+            get_litellm_status,
+            start_litellm,
+            stop_litellm,
         ])
         .run(tauri::generate_context!())
         .map_err(|e| {
